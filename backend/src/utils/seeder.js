@@ -84,7 +84,7 @@ const importData = async () => {
       adminUser = await User.create({
         fullName: "Admin Sport Gear",
         email: adminEmail,
-        password: "123wqe123",
+        password: "123qwe123",
         role: "ADMIN",
         active: true,
       });
