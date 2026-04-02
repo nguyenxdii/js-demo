@@ -66,7 +66,7 @@ const ContactPage = () => {
         <div className="text-center mb-16">
           <Title className="!mb-4 text-4xl font-black">Liên hệ với Sport Gear Studio</Title>
           <Paragraph className="text-lg text-gray-500 max-w-2xl mx-auto">
-            Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn. Đừng ngần ngại liên hệ với Sport Gear Studio bất cứ khi nào bạn cần tư vấn về đồ tập thể thao.
+            Chúng tôi luôn sẵn sàng lắng nghe và hỗ trợ bạn. Đừng ngần ngại liên hệ với Sport Gear Studio bất cứ khi nào bạn cần tư vấn về trang phục và dụng cụ tập luyện chuyên nghiệp.
           </Paragraph>
         </div>
 
@@ -145,7 +145,7 @@ const ContactPage = () => {
                   label={<Text strong className="text-gray-600">Tiêu đề</Text>}
                   rules={[{ required: true, message: "Vui lòng nhập tiêu đề" }]}
                 >
-                  <Input placeholder="Tôi cần tư vấn build PC đồ họa..." className="rounded-xl border-gray-100 bg-gray-50 hover:bg-white focus:bg-white transition-all" />
+                  <Input placeholder="Tôi cần tư vấn chọn giày chạy bộ..." className="rounded-xl border-gray-100 bg-gray-50 hover:bg-white focus:bg-white transition-all" />
                 </Form.Item>
 
                 <Form.Item

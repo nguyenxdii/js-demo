@@ -24,12 +24,9 @@ import CheckoutPage from "./pages/client/CheckoutPage";
 import PaymentReturn from "./pages/client/PaymentReturn";
 import OrdersPage from "./pages/client/OrdersPage";
 import ProfilePage from "./pages/client/ProfilePage";
-import SavedBuildsPage from "./pages/client/SavedBuildsPage";
 import ContactPage from "./pages/client/ContactPage";
 import VerifyOtp from "./pages/auth/VerifyOtp";
 import { CartProvider } from "./contexts/CartContext";
-import { BuildPCProvider } from "./contexts/BuildPCContext";
-import BuildPC from "./pages/client/BuildPC";
 
 function App() {
   return (
@@ -42,7 +39,6 @@ function App() {
     >
       <BrowserRouter>
         <CartProvider>
-          <BuildPCProvider>
           <Routes>
             {/* Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
@@ -89,10 +85,6 @@ function App() {
                 element={<ProductList />}
               />
               <Route
-                path="build-pc"
-                element={<BuildPC />}
-              />
-              <Route
                 path="deals"
                 element={
                   <div className="container mx-auto p-8 text-xl">
@@ -111,7 +103,6 @@ function App() {
               <Route path="wallet/callback" element={<PaymentReturn />} />
               <Route path="orders" element={<OrdersPage />} />
               <Route path="profile" element={<ProfilePage />} />
-              <Route path="saved-builds" element={<SavedBuildsPage />} />
             </Route>
 
             <Route path="/verify-otp" element={<VerifyOtp />} />
@@ -126,9 +117,8 @@ function App() {
               }
             />
           </Routes>
-        </BuildPCProvider>
-      </CartProvider>
-    </BrowserRouter>
+        </CartProvider>
+      </BrowserRouter>
     </ConfigProvider>
   );
 }
