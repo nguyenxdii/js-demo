@@ -88,12 +88,12 @@ const importData = async () => {
         role: "ADMIN",
         active: true,
       });
-      console.log("✅ Đã tạo tài khoản Admin mới: admin@gmail.com / 123wqe123");
+      console.log("✅ Đã tạo tài khoản Admin mới: admin@gmail.com / 123qwe123");
     } else {
-      adminUser.password = "123wqe123";
+      adminUser.password = "123qwe123";
       // Password hashing handled by User schema pre-save hook
       await adminUser.save();
-      console.log("✅ Đã cập nhật mật khẩu Admin: admin@gmail.com / 123wqe123");
+      console.log("✅ Đã cập nhật mật khẩu Admin: admin@gmail.com / 123qwe123");
     }
 
     // 1. CẬP NHẬT BANNER MẪU
