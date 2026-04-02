@@ -66,31 +66,72 @@ const OrderManagement = () => {
   };
 
   const columns = [
-    { title: "Mã đơn", dataIndex: "orderCode", key: "orderCode" },
+    { 
+      title: "Mã đơn", 
+      dataIndex: "orderCode", 
+      key: "orderCode",
+      width: '12%',
+      align: 'center',
+      render: (text) => (
+        <Text copyable={{ tooltips: false }} ellipsis={{ tooltip: text }} className="font-mono text-[12px] text-slate-500">
+          {text}
+        </Text>
+      )
+    },
     { 
       title: "Khách hàng", 
       key: "user",
-      render: (_, record) => record.user?.fullName || <Text type="secondary">Ẩn danh</Text>
+      width: '18%',
+      align: 'center',
+      render: (_, record) => (
+        <div className="flex flex-col items-center">
+          <Text ellipsis={{ tooltip: record.user?.fullName }} className="text-[13px] font-medium block text-center max-w-[150px]">
+            {record.user?.fullName || "Ẩn danh"}
+          </Text>
+        </div>
+      )
     },
     { 
       title: "Tổng tiền", 
       dataIndex: "totalAmount", 
-      render: (price) => `${price ? price.toLocaleString() : 0} ₫` 
+      width: '12%',
+      align: 'center',
+      render: (price) => (
+        <Text strong className="text-slate-700 text-[13px]">
+          {price?.toLocaleString()}₫
+        </Text>
+      )
     },
     { 
       title: "Trạng thái", 
-      dataIndex: "status", 
-      render: (status) => getStatusTag(status) 
+      dataIndex: "status",
+      width: '15%',
+      align: 'center',
+      render: (status) => {
+        const statuses = {
+          PENDING: { color: 'orange', text: 'Chờ thanh toán' },
+          PAID: { color: 'green', text: 'Đã thanh toán' },
+          PROCESSING: { color: 'blue', text: 'Đang xử lý' },
+          SHIPPED: { color: 'cyan', text: 'Đang giao' },
+          DELIVERED: { color: 'green', text: 'Đã giao' },
+          CANCELLED: { color: 'red', text: 'Đã hủy' }
+        };
+        const s = statuses[status] || { color: 'default', text: status };
+        return <Tag color={s.color} className="text-[10px] font-bold m-0 border-none px-2">{s.text}</Tag>;
+      }
     },
     {
       title: "Cập nhật",
       key: "update",
+      width: '18%',
+      align: 'center',
       render: (_, record) => (
         <Select 
           value={record.status} 
-          style={{ width: 140 }} 
+          style={{ width: '100%' }} 
           onChange={(val) => handleStatusChange(record._id || record.id, val)}
           size="small"
+          className="text-[11px]"
         >
           <Option value="PENDING">Chờ thanh toán</Option>
           <Option value="PAID">Đã thanh toán</Option>
@@ -102,31 +143,48 @@ const OrderManagement = () => {
       )
     },
     {
-      title: "Thao tác",
+      title: "Xem",
       key: "action",
+      width: '6%',
+      align: 'right',
       render: (_, record) => (
-        <Button icon={<EyeOutlined />} onClick={() => { setSelectedOrder(record); setIsModalVisible(true); }}>Chi tiết</Button>
+        <Button 
+          type="text"
+          icon={<EyeOutlined className="text-blue-500" />} 
+          size="small"
+          onClick={() => { setSelectedOrder(record); setIsModalVisible(true); }}
+        />
       )
     }
   ];
 
   return (
     <Card 
-      title={<div className="font-bold text-lg">Quản lý đơn hàng</div>} 
-      className="shadow-sm border-none rounded-2xl"
+      title={
+        <div className="py-1">
+          <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+            Quản Lý Đơn Hàng
+          </h1>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+            Theo dõi và cập nhật trạng thái đơn hàng từ khách hàng
+          </span>
+        </div>
+      }
       extra={
-        <Space>
+        <Space size="middle">
            <Input 
               placeholder="Tìm mã đơn, tên khách..." 
-              prefix={<SearchOutlined />} 
+              prefix={<SearchOutlined className="text-gray-400" />} 
               onChange={e => setSearchText(e.target.value)}
               style={{ width: 250 }}
               allowClear
+              className="rounded-lg h-9 shadow-sm"
            />
            <Select 
               defaultValue="ALL" 
-              style={{ width: 150 }}
+              style={{ width: 160 }}
               onChange={val => setStatusFilter(val)}
+              className="rounded-lg h-9 shadow-sm"
            >
               <Option value="ALL">Tất cả trạng thái</Option>
               <Option value="PENDING">Chờ thanh toán</Option>
@@ -138,8 +196,16 @@ const OrderManagement = () => {
            </Select>
         </Space>
       }
+      className="shadow-sm border-none rounded-2xl"
     >
-      <Table columns={columns} dataSource={filteredOrders} rowKey="_id" loading={loading} />
+      <Table 
+        columns={columns} 
+        dataSource={filteredOrders} 
+        rowKey="_id" 
+        loading={loading} 
+        size="middle"
+        className="sgs-admin-table"
+      />
       
       <Modal 
         title="Chi tiết đơn hàng"
@@ -170,11 +236,47 @@ const OrderManagement = () => {
                 pagination={false} 
                 size="small"
                 columns={[
-                    { title: "Sản phẩm", key: "prod_name", render: (item) => item.product?.name || "Sản phẩm đã xóa" },
-                    { title: "SL", dataIndex: "quantity" },
-                    { title: "Giá", dataIndex: "price", render: (p) => `${p ? p.toLocaleString() : 0} ₫` }
+                    { 
+                      title: "Sản phẩm", 
+                      key: "prod_details", 
+                      render: (item) => (
+                        <div className="flex items-center gap-2">
+                          {item.productImage && (
+                            <img 
+                              src={item.productImage.startsWith('http') ? item.productImage : `http://localhost:8080${item.productImage}`} 
+                              alt={item.productName} 
+                              className="w-10 h-10 object-cover rounded shadow-sm"
+                            />
+                          )}
+                          <Text className="text-[13px]">{item.productName || item.name || item.product?.name || "Sản phẩm đã xóa"}</Text>
+                        </div>
+                      ) 
+                    },
+                    { title: "SL", dataIndex: "quantity", width: 50, align: 'center' },
+                    { title: "Giá", dataIndex: "price", align: 'right', render: (p) => <Text strong>{p?.toLocaleString()}₫</Text> }
                 ]}
               />
+              
+              <div className="border-t pt-3 flex flex-col items-end space-y-1">
+                 <div className="flex justify-between w-64 text-[13px]">
+                    <Text type="secondary">Tạm tính:</Text>
+                    <Text>{(selectedOrder.totalAmount - (selectedOrder.shippingFee || 0) + (selectedOrder.discountAmount || 0))?.toLocaleString()}₫</Text>
+                 </div>
+                 {selectedOrder.discountAmount > 0 && (
+                   <div className="flex justify-between w-64 text-[13px]">
+                      <Text type="secondary">Giảm giá:</Text>
+                      <Text className="text-red-500">-{selectedOrder.discountAmount?.toLocaleString()}₫</Text>
+                   </div>
+                 )}
+                 <div className="flex justify-between w-64 text-[13px]">
+                    <Text type="secondary">Phí vận chuyển:</Text>
+                    <Text>{selectedOrder.shippingFee === 0 ? "Miễn phí" : `${selectedOrder.shippingFee?.toLocaleString()}₫`}</Text>
+                 </div>
+                 <div className="flex justify-between w-64 pt-2 border-t mt-1">
+                    <Text strong className="text-lg">Tổng thanh toán:</Text>
+                    <Text strong className="text-xl text-blue-600">{selectedOrder.totalAmount?.toLocaleString()}₫</Text>
+                 </div>
+              </div>
           </div>
         )}
       </Modal>

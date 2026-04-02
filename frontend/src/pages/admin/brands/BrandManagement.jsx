@@ -62,18 +62,21 @@ const BrandManagement = () => {
       title: "Logo",
       dataIndex: "logoUrl",
       key: "logoUrl",
-      width: 100,
+      width: 70,
+      align: 'center',
       render: (url) => {
-        // Prefix with backend URL if it's a local path
         const fullUrl = url && !url.startsWith("http") ? `http://localhost:8080${url}` : url;
         return fullUrl ? (
           <img
             src={fullUrl}
-            alt="logo"
-            style={{ width: 50, height: 50, objectFit: "contain" }}
+            alt="icon"
+            style={{ width: 50, height: 50, objectFit: "contain", borderRadius: 6 }}
+            className="mx-auto"
           />
         ) : (
-          "-"
+          <div className="w-12 h-12 bg-gray-50 rounded-md flex items-center justify-center text-gray-300 mx-auto text-[10px]">
+            -
+          </div>
         );
       },
     },
@@ -240,12 +243,22 @@ const BrandManagement = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
         <div>
-          <Title level={2}>Quản Lý Thương Hiệu (Brands)</Title>
-          <Text type="secondary">Quản lý các hãng sản xuất và logo thương hiệu.</Text>
+          <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+            Quản Lý Thương Hiệu
+          </h1>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+             Quản lý các hãng sản xuất và logo thương hiệu
+          </span>
         </div>
-        <Button type="primary" size="large" icon={<PlusOutlined />} onClick={showAddModal}>
+        <Button 
+          type="primary" 
+          size="middle" 
+          icon={<PlusOutlined />} 
+          onClick={showAddModal}
+          className="shadow-md shadow-blue-500/10 rounded-xl px-6 h-10 text-[12px] font-bold uppercase tracking-wider"
+        >
           Thêm Thương Hiệu
         </Button>
       </div>
@@ -266,6 +279,7 @@ const BrandManagement = () => {
         dataSource={filteredBrands}
         rowKey="_id"
         loading={loading}
+        size="small"
       />
 
       <Modal

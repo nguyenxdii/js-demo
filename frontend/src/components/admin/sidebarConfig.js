@@ -91,11 +91,6 @@ export const sidebarConfig = {
           icon: GiftOutlined,
           url: "/admin/vouchers",
         },
-        {
-          title: "Bảo hành",
-          icon: SafetyOutlined,
-          url: "/admin/warranties",
-        },
       ],
     },
     {
@@ -110,21 +105,6 @@ export const sidebarConfig = {
           title: "Bố cục trang chủ",
           icon: LayoutOutlined,
           url: "/admin/sections",
-        },
-      ],
-    },
-    {
-      title: "Cài đặt",
-      items: [
-        {
-          title: "Tài khoản",
-          icon: UserOutlined,
-          url: "/admin/settings/account",
-        },
-        {
-          title: "Giao diện",
-          icon: SkinOutlined,
-          url: "/admin/settings/appearance",
         },
       ],
     },

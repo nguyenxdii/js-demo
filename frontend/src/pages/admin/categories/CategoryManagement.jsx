@@ -131,17 +131,19 @@ const CategoryManagement = () => {
       title: "Icon",
       dataIndex: "imageUrl",
       key: "imageUrl",
-      width: 70,
+      width: 55,
+      align: 'center',
       render: (url) => {
         const fullUrl = url && !url.startsWith("http") ? `http://localhost:8080${url}` : url;
         return fullUrl ? (
           <img
             src={fullUrl}
             alt="icon"
-            className="w-10 h-10 object-contain rounded"
+            style={{ width: 32, height: 32, objectFit: "contain", borderRadius: 4 }}
+            className="mx-auto"
           />
         ) : (
-          <div className="w-10 h-10 bg-gray-50 rounded flex items-center justify-center text-gray-300">
+          <div className="w-8 h-8 bg-gray-50 rounded-md flex items-center justify-center text-gray-300 mx-auto text-[9px]">
             -
           </div>
         );
@@ -335,19 +337,21 @@ const CategoryManagement = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
         <div>
-          <Title level={2}>Quản Lý Danh Mục (Categories)</Title>
-          <Text type="secondary">
-            Hệ thống phân cấp đồ tập & thiết bị. Quản lý danh mục cha/con và thương hiệu liên kết.
-          </Text>
+          <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+            Quản Lý Danh Mục
+          </h1>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+            Hệ thống phân cấp đồ tập & thiết bị
+          </span>
         </div>
         <Button
           type="primary"
-          size="large"
+          size="middle"
           icon={<PlusOutlined />}
           onClick={handleCreateNew}
-          className="rounded-lg h-10 px-6"
+          className="shadow-md shadow-blue-500/10 rounded-xl px-6 h-10 text-[12px] font-bold uppercase tracking-wider"
         >
           Thêm Mới
         </Button>
@@ -370,6 +374,7 @@ const CategoryManagement = () => {
           dataSource={filteredCategories}
           rowKey="_id"
           loading={loading}
+          size="small"
           pagination={false}
           onRow={(record) => ({
             onClick: () => onRowClick(record),

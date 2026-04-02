@@ -74,7 +74,9 @@ export const CartProvider = ({ children }) => {
 
     try {
       setLoading(true);
-      const response = await cartService.addToCart(productId, quantity);
+      // Đảm bảo productId luôn là string ID (hỗ trợ trường hợp truyền vào nguyên object)
+      const idToSend = (typeof productId === 'object' && productId?._id) ? productId._id : productId;
+      const response = await cartService.addToCart(idToSend, quantity);
       setCart(response.data);
       message.success("Đã thêm sản phẩm vào giỏ hàng!");
     } catch (error) {

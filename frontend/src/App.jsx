@@ -33,7 +33,7 @@ function App() {
     <ConfigProvider
       theme={{
         token: {
-          fontFamily: "'Outfit', sans-serif",
+          fontFamily: "'Be Vietnam Pro', sans-serif",
         },
       }}
     >
@@ -61,18 +61,6 @@ function App() {
               <Route path="vouchers" element={<VoucherManagement />} />
               <Route path="banners" element={<BannerManagement />} />
               <Route path="sections" element={<SectionManagement />} />
-              <Route
-                path="warranties"
-                element={<ComingSoon title="Bảo hành" />}
-              />
-              <Route
-                path="settings/account"
-                element={<ComingSoon title="Tài khoản" />}
-              />
-              <Route
-                path="settings/appearance"
-                element={<ComingSoon title="Giao diện" />}
-              />
             </Route>
 
             {/* Customer Routes */}

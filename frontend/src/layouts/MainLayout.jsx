@@ -218,9 +218,9 @@ export default function MainLayout() {
               <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" arrow={{ pointAtCenter: true }}>
                 <div className="flex items-center gap-2 cursor-pointer group shrink-0">
                   <Avatar 
-                    src={getFullImageUrl(user.avatarUrl)} 
+                    src={user.avatarUrl ? getFullImageUrl(user.avatarUrl) : "/user-default.jpg"} 
                     icon={<UserOutlined />} 
-                    className="border-2 border-transparent group-hover:border-orange-500 transition-all w-8 h-8"
+                    className="border-2 border-transparent group-hover:border-orange-500 transition-all w-8 h-8 flex items-center justify-center overflow-hidden"
                   />
                   <span className="text-xs font-medium text-slate-600 hidden lg:inline">{user.fullName}</span>
                 </div>

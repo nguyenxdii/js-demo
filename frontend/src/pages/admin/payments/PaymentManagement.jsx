@@ -56,11 +56,11 @@ const PaymentManagement = () => {
 
   const columns = [
     { 
-      title: "Mã đơn hàng", 
+      title: "Mã Đơn Hàng", 
       dataIndex: "orderCode", 
       key: "orderCode",
-      ellipsis: true,
-      className: "whitespace-nowrap font-bold text-primary"
+      align: 'center',
+      render: (text) => <Text strong className="text-[12px] text-blue-600 uppercase font-mono">{text}</Text>
     },
     { 
       title: "Khách hàng", 
@@ -70,10 +70,10 @@ const PaymentManagement = () => {
       render: (_, record) => record.user?.fullName || <Text type="secondary">Ẩn danh</Text>
     },
     { 
-      title: "Số tiền", 
+      title: "Số Tiền", 
       dataIndex: "amount", 
-      className: "whitespace-nowrap font-bold text-red-600",
-      render: (amount) => `${amount ? amount.toLocaleString() : 0} ₫` 
+      align: 'center',
+      render: (amount) => <Text strong className="text-red-600 text-[13px]">{amount?.toLocaleString()} ₫</Text> 
     },
     { 
       title: "Phương thức", 
@@ -82,29 +82,15 @@ const PaymentManagement = () => {
       className: "whitespace-nowrap"
     },
     { 
-      title: "Trạng thái", 
+      title: "Trạng Thái", 
       dataIndex: "status", 
-      className: "whitespace-nowrap",
+      align: 'center',
       render: (status) => {
-        let color = 'warning';
-        let text = 'Chờ thanh toán';
-        let icon = <ClockCircleOutlined />;
-
-        if (status === 'PAID') {
-          color = 'success';
-          text = 'Thành công';
-          icon = <CheckCircleOutlined />;
-        } else if (status === 'FAILED') {
-          color = 'error';
-          text = 'Thất bại';
-          icon = <CloseCircleOutlined />;
-        }
-
-        return (
-          <Tag icon={icon} color={color}>
-            {text}
-          </Tag>
-        );
+        let color = 'orange';
+        let text = 'Chờ xử lý';
+        if (status === 'PAID') { color = 'green'; text = 'Thành công'; }
+        else if (status === 'FAILED') { color = 'red'; text = 'Thất bại'; }
+        return <Tag color={color} className="border-none text-[10px] font-bold uppercase">{text}</Tag>;
       }
     },
     { 
@@ -122,18 +108,28 @@ const PaymentManagement = () => {
 
   return (
     <Card 
-      title={<div className="font-bold text-lg">Quản lý Giao dịch / Thanh toán</div>} 
+      title={
+        <div className="py-1">
+          <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+            Quản Lý Thanh Toán
+          </h1>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+            Theo dõi dòng tiền và lịch sử giao dịch trực tuyến
+          </span>
+        </div>
+      }
       className="shadow-sm border-none rounded-2xl"
       extra={
         <Space>
            <Input 
               placeholder="Mã giao dịch, tên khách..." 
-              prefix={<SearchOutlined />} 
+              prefix={<SearchOutlined className="text-gray-400" />} 
               onChange={e => setSearchText(e.target.value)}
-              style={{ width: 250 }}
+              style={{ width: 220 }}
               allowClear
+              className="rounded-lg h-9"
            />
-           <Select defaultValue="ALL" style={{ width: 150 }} onChange={val => setStatusFilter(val)}>
+           <Select defaultValue="ALL" style={{ width: 140 }} onChange={val => setStatusFilter(val)} className="rounded-lg h-9">
               <Option value="ALL">Tất cả trạng thái</Option>
               <Option value="SUCCESS">Thành công</Option>
               <Option value="PENDING">Đang xử lý</Option>

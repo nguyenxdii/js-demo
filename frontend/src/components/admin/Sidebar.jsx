@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { LogoutOutlined, UserOutlined, BellOutlined, ThunderboltOutlined } from "@ant-design/icons";
+import { LogoutOutlined, UserOutlined, ThunderboltOutlined } from "@ant-design/icons";
 import { Avatar, Dropdown, Badge, Popover, List, Typography, Button } from "antd";
 import SidebarGroup from "./SidebarGroup";
 import { sidebarConfig } from "./sidebarConfig";
@@ -82,25 +82,16 @@ export default function Sidebar({ user }) {
       <div
         className="h-16 flex items-center justify-between px-4 border-b border-gray-200 cursor-pointer flex-shrink-0"
       >
-        <img
-          src="/logo-exeshop.png"
-          alt="EXEShop Logo"
-          className="h-8 w-auto object-contain"
+        <div 
           onClick={() => navigate("/admin/dashboard")}
-        />
-        
-        <Popover 
-          content={notificationContent} 
-          title="Thông báo hệ thống" 
-          trigger="click" 
-          placement="bottomRight"
+          className="flex items-center gap-2 no-underline shrink-0 cursor-pointer group"
         >
-          <div className="hover:bg-gray-100 p-2 rounded-full transition-colors flex items-center justify-center relative">
-            <Badge count={notifications.length} size="small" offset={[2, -2]}>
-              <BellOutlined style={{ fontSize: '18px', color: '#374151' }} />
-            </Badge>
+          <div className="w-1 h-7 bg-orange-500 rounded-full group-hover:h-8 transition-all"></div>
+          <div className="leading-none">
+            <h1 className="text-base font-bold text-slate-900 m-0 tracking-tighter leading-none uppercase italic logo-font">Sport Gear</h1>
+            <span className="text-[8px] font-medium text-gray-400 tracking-[0.2em] uppercase">Studio</span>
           </div>
-        </Popover>
+        </div>
       </div>
 
       {/* Navigation with custom scrollbar */}
@@ -115,7 +106,8 @@ export default function Sidebar({ user }) {
         <Dropdown menu={{ items: userMenuItems }} placement="topRight">
           <div className="flex items-center gap-3 cursor-pointer hover:bg-gray-50 p-2 rounded-md transition-colors">
             <Avatar
-              style={{ backgroundColor: "#ff4d4f" }}
+              src={user?.avatarUrl ? getFullImageUrl(user.avatarUrl) : "/user-default.jpg"}
+              className="border border-gray-100 flex items-center justify-center overflow-hidden"
               icon={<UserOutlined />}
             />
             <div className="flex-1 min-w-0">

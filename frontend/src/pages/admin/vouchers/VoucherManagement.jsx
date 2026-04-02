@@ -97,40 +97,51 @@ const VoucherManagement = () => {
             title: "Mã Code", 
             dataIndex: "code", 
             key: "code",
-            render: (code) => <Tag color="gold" className="font-bold border-none px-3 rounded-full">{code}</Tag>
+            align: 'center',
+            render: (code) => <Tag color="gold" className="font-bold border-none px-3 rounded-md text-[11px] uppercase tracking-wider">{code}</Tag>
         },
         { 
-            title: "Loại", 
+            title: "Loại Voucher", 
             dataIndex: "isFreeShip", 
-            render: (freeShip, record) => freeShip ? <Tag color="blue">Freeship</Tag> : (record.type === 'PERCENT' ? "Phần trăm (%)" : "Tiền mặt (VNĐ)")
+            align: 'center',
+            render: (freeShip, record) => freeShip ? <Tag color="blue" className="border-none text-[10px] uppercase font-bold">Freeship</Tag> : (record.type === 'PERCENT' ? "Giảm %" : "Tiền mặt")
         },
         { 
-            title: "Giá trị", 
+            title: "Giá Trị", 
             dataIndex: "value", 
+            align: 'center',
             render: (val, record) => {
-                if (record.isFreeShip) return <Text type="secondary">Miễn phí ship</Text>;
-                return record.type === 'PERCENT' ? `${val}%` : `${val.toLocaleString()} ₫`;
+                if (record.isFreeShip) return <Text type="secondary" className="text-[11px]">Free Shipping</Text>;
+                return <Text strong className="text-[13px]">{record.type === 'PERCENT' ? `${val}%` : `${val.toLocaleString()} ₫`}</Text>;
             }
         },
-        { title: "Số lượng", dataIndex: "quantity" },
         { 
-            title: "Trạng thái", 
+            title: "Trong Kho", 
+            dataIndex: "quantity",
+            align: 'center',
+            render: (qty) => <Text className="font-mono text-[12px]">{qty}</Text>
+        },
+        { 
+            title: "Trạng Thái", 
             dataIndex: "isActive", 
-            render: (active) => <Tag color={active ? "success" : "default"}>{active ? "Hoạt động" : "Tạm tắt"}</Tag>
+            align: 'center',
+            render: (active) => <Tag color={active ? "success" : "default"} className="border-none text-[10px] uppercase font-bold">{active ? "Hoạt động" : "Tạm tắt"}</Tag>
         },
         {
-            title: "Thời gian",
+            title: "Hiệu Lực",
             key: "time",
+            align: 'center',
             render: (_, record) => (
-                <div className="text-xs">
-                    <div>BĐ: {record.startDate ? dayjs(record.startDate).format("DD/MM/YYYY") : "Ngay lập tức"}</div>
-                    <div>KT: {record.expirationDate ? dayjs(record.expirationDate).format("DD/MM/YYYY") : "Vô hạn"}</div>
+                <div className="text-[10px] font-medium text-gray-500 uppercase tracking-tighter">
+                    <div>S: {record.startDate ? dayjs(record.startDate).format("DD/MM/YY") : "NOW"}</div>
+                    <div>E: {record.expirationDate ? dayjs(record.expirationDate).format("DD/MM/YY") : "INF"}</div>
                 </div>
             )
         },
         {
-            title: "Thao tác",
+            title: "Thao Tác",
             key: "action",
+            align: 'right',
             render: (_, record) => (
                 <Space>
                     <Button icon={<EditOutlined />} onClick={() => handleAddEdit(record)}>Sửa</Button>
@@ -149,7 +160,30 @@ const VoucherManagement = () => {
     ];
 
     return (
-        <Card title="Quản lý Vouchers" className="shadow-sm border-none rounded-2xl" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => handleAddEdit()}>Thêm Voucher</Button>}>
+        <Card 
+            title={
+                <div className="py-1">
+                    <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+                        Quản Lý Voucher
+                    </h1>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+                        Phát hành mã giảm giá và khuyến mãi thành viên
+                    </span>
+                </div>
+            }
+            className="shadow-sm border-none rounded-2xl" 
+            extra={
+                <Button 
+                    type="primary" 
+                    size="middle"
+                    icon={<PlusOutlined />} 
+                    onClick={() => handleAddEdit()}
+                    className="shadow-md shadow-blue-500/10 rounded-xl px-6 h-10 text-[12px] font-bold uppercase tracking-wider"
+                >
+                    Thêm Voucher
+                </Button>
+            }
+        >
             <Table columns={columns} dataSource={vouchers} rowKey="_id" loading={loading} />
             
             <Modal 

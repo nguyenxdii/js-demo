@@ -212,7 +212,7 @@ export default function ProductList() {
           
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-black text-slate-900 uppercase italic m-0 font-['Outfit']">
+              <h1 className="text-2xl font-black text-slate-900 uppercase italic m-0 font-['Inter']">
                 {currentCategory ? currentCategory.name : "Tất cả sản phẩm"}
               </h1>
               <p className="text-xs text-gray-400 mt-1 font-medium">{pagination.totalElements} sản phẩm</p>
@@ -262,7 +262,7 @@ export default function ProductList() {
               <>
                 <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                   {products.map((product) => (
-                    <PremiumProductCard key={product._id || product.id} item={product} />
+                    <PremiumProductCard key={product._id || product.id} product={product} />
                   ))}
                 </div>
 

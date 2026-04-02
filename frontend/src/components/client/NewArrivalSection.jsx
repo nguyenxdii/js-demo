@@ -11,34 +11,33 @@ const NewArrivalSection = ({ section, sliderSettings }) => {
   if (!section || !section.products || section.products.length === 0) return null;
 
   return (
-    <div className="bg-[#111] rounded-[48px] p-10 md:p-14 shadow-[0_40px_100px_rgba(0,0,0,0.2)] overflow-hidden relative group border border-white/5">
-      {/* Decorative Blur */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-orange-600/10 rounded-full -ml-40 -mt-40 blur-[100px] group-hover:opacity-100 opacity-50 transition-opacity duration-1000"></div>
-      
-      <div className="flex flex-col md:flex-row justify-between items-end mb-12 relative z-10">
-        <div>
-          <div className="flex items-center gap-3 mb-4">
-             <div className="w-10 h-1 bg-orange-500 rounded-full"></div>
-             <ThunderboltOutlined className="text-orange-500 text-xl" />
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 overflow-hidden relative group mt-10">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8 border-b border-gray-50 pb-6">
+        <div className="flex items-center w-full md:w-auto">
+          {/* Multi-layered Slanted Title */}
+          <div className="relative flex items-center min-w-[220px] -ml-8">
+            {/* Background Layer 1: Dark Depth */}
+            <div className="absolute inset-0 bg-[#0a191e] clip-path-slanted translate-x-2 translate-y-1 opacity-20"></div>
+            
+            {/* Background Layer 2: Orange Gradient */}
+            <div className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 px-8 pr-12 clip-path-slanted flex items-center shadow-lg">
+              <Title level={4} className="!m-0 !text-lg !font-bold !text-white uppercase tracking-tight">
+                MỚI NHẤT
+              </Title>
+              {/* Subtle shine effect */}
+              <div className="absolute top-0 right-0 h-full w-4 bg-white/10 skew-x-[-20deg] -mr-2"></div>
+            </div>
           </div>
-          <Title level={1} className="!m-0 !text-5xl !font-black !tracking-tighter uppercase italic logo-font text-white leading-tight">
-            BST MỚI NHẤT
-          </Title>
-          <Text className="text-gray-500 text-sm font-bold uppercase tracking-[0.4em] mt-3 block">
-             The Future of Performance
-          </Text>
         </div>
         
-        <Link to="/products">
-          <Button 
-            className="group/btn h-14 px-8 rounded-full bg-white hover:!bg-orange-500 hover:!border-orange-500 border-white text-black hover:!text-white font-bold text-xs uppercase tracking-widest transition-all shadow-xl shadow-white/5"
-          >
-            KHÁM PHÁ NGAY <RightOutlined className="text-[10px] group-hover/btn:translate-x-1 transition-transform ml-2" />
+        <Link to={`/products?sectionId=${section._id}`} className="flex-shrink-0">
+          <Button type="link" className="group/btn flex items-center gap-1 font-bold text-slate-400 hover:text-orange-500 p-0 h-auto text-xs uppercase tracking-tighter">
+            Xem tất cả <RightOutlined className="text-[8px] group-hover/btn:translate-x-1 transition-transform" />
           </Button>
         </Link>
       </div>
 
-      <div className="relative z-10 slick-dark">
+      <div className="relative">
         <Slider {...sliderSettings}>
           {section.products.map((product) => (
             <div key={product._id} className="px-3 pb-8">

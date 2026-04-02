@@ -38,10 +38,10 @@ const createOrder = async (req, res, next) => {
         // 3. Chuẩn bị danh sách sản phẩm cho đơn hàng
         const orderItems = cart.items.map(item => ({
             product: item.product._id,
-            name: item.product.name,
+            productName: item.product.name,
             quantity: item.quantity,
             price: item.product.price,
-            image: item.product.mainImageUrl
+            productImage: item.product.mainImageUrl
         }));
 
         // 4. Tính toán tổng tiền

@@ -90,17 +90,21 @@ const ProductManagement = () => {
       title: "Hình ảnh",
       dataIndex: "mainImageUrl",
       key: "mainImageUrl",
-      width: 100,
+      width: 80,
+      align: 'center',
       render: (url) => {
         const fullUrl = url && !url.startsWith("http") ? `http://localhost:8080${url}` : url;
         return fullUrl ? (
           <img
             src={fullUrl}
             alt="product"
-            style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 4 }}
+            style={{ width: 60, height: 60, objectFit: "cover", borderRadius: 8, border: '1px solid #f8fafc' }}
+            className="mx-auto"
           />
         ) : (
-          "-"
+          <div className="w-[60px] h-[60px] bg-gray-50 rounded-lg border border-dashed border-gray-200 flex items-center justify-center text-gray-300 text-[10px] mx-auto">
+            NO IMG
+          </div>
         );
       },
     },
@@ -108,88 +112,96 @@ const ProductManagement = () => {
       title: "Tên Sản Phẩm",
       dataIndex: "name",
       key: "name",
+      width: '35%',
+      align: 'center',
       render: (text, record) => (
-        <div>
-          <Text strong>{text}</Text>
-          <br />
-          <Text type="secondary" style={{ fontSize: "12px" }}>
+        <div className="max-w-[180px] mx-auto text-left">
+          <Text 
+            strong 
+            style={{ fontSize: "13px", display: 'block' }} 
+            ellipsis={{ tooltip: text }}
+          >
+            {text}
+          </Text>
+          <Text type="secondary" style={{ fontSize: "10px" }}>
             SKU: {record.sku}
           </Text>
         </div>
       ),
     },
     {
-      title: "Danh mục / Thương hiệu",
-      key: "cat_brand",
-      render: (_, record) => (
-        <div>
-          <Tag color="blue">{record.category?.name || "N/A"}</Tag>
-          <br />
-          <Tag color="purple" style={{ marginTop: 4 }}>
-            {record.brand?.name || "N/A"}
-          </Tag>
-        </div>
-      ),
-    },
-    {
-      title: "Giá bán",
+      title: "Giá",
       dataIndex: "price",
       key: "price",
-      render: (price) =>
-        new Intl.NumberFormat("vi-VN", {
-          style: "currency",
-          currency: "VND",
-        }).format(price),
+      width: '12%',
+      align: 'center',
+      render: (price) => (
+        <span className="font-bold text-slate-700 text-[13px]">
+          {new Intl.NumberFormat("vi-VN").format(price)}₫
+        </span>
+      ),
     },
     {
       title: "Kho",
       dataIndex: "stock",
       key: "stock",
+      width: '6%',
+      align: 'center',
       render: (stock) => (
-        <span style={{ color: stock < 5 ? "red" : "inherit" }}>{stock}</span>
+        <span className={`font-bold text-sm ${stock < 5 ? "text-red-500" : "text-slate-600"}`}>{stock}</span>
       ),
     },
     {
-      title: "Giới tính",
+      title: "G.Tính",
       dataIndex: "gender",
       key: "gender",
+      width: '8%',
+      align: 'center',
       render: (gender) => (
-        <Tag color={gender === "Nam" ? "blue" : gender === "Nữ" ? "magenta" : "gold"}>
+        <span className={`text-[11px] font-bold px-2 py-0.5 rounded ${
+          gender === "Nam" ? "bg-blue-50 text-blue-600" : 
+          gender === "Nữ" ? "bg-magenta-50 text-magenta-600" : 
+          "bg-gold-50 text-gold-600"
+        }`}>
           {gender || "Unisex"}
-        </Tag>
+        </span>
       ),
     },
     {
       title: "Trạng thái",
       dataIndex: "isActive",
       key: "isActive",
+      width: '12%',
+      align: 'center',
       render: (isActive) => (
-        <Tag color={isActive ? "green" : "red"}>
-          {isActive ? "Đang bán" : "Ngừng bán"}
-        </Tag>
+        <div className="flex items-center justify-center gap-1.5">
+           <div className={`w-1.5 h-1.5 rounded-full ${isActive ? "bg-green-500" : "bg-red-500"}`}></div>
+           <span className={`text-[12px] font-medium ${isActive ? "text-green-600" : "text-red-600"}`}>
+             {isActive ? "Đang bán" : "Ngừng bán"}
+           </span>
+        </div>
       ),
     },
     {
       title: "Thao tác",
       key: "action",
+      width: '10%',
+      align: 'right',
       render: (_, record) => (
-        <Space size="middle">
+        <Space size="small">
           <Button
-            type="primary"
-            icon={<EditOutlined />}
+            type="text"
+            icon={<EditOutlined className="text-blue-500" />}
             size="small"
             onClick={() => showEditModal(record)}
-          >
-            Sửa
-          </Button>
+          />
           <Button
+            type="text"
             danger
             icon={<DeleteOutlined />}
             size="small"
             onClick={() => showDeleteConfirm(record)}
-          >
-            Xóa
-          </Button>
+          />
         </Space>
       ),
     },
@@ -329,12 +341,22 @@ const ProductManagement = () => {
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
         <div>
-          <Title level={2}>Quản Lý Sản Phẩm (Products)</Title>
-          <Text type="secondary">Quản lý kho hàng, giá bán và thông tin sản phẩm.</Text>
+          <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+            Quản Lý Sản Phẩm
+          </h1>
+          <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+            Hệ thống quản lý kho hàng và thông tin sản phẩm
+          </span>
         </div>
-        <Button type="primary" size="large" icon={<PlusOutlined />} onClick={showAddModal}>
+        <Button 
+          type="primary" 
+          size="middle" 
+          icon={<PlusOutlined />} 
+          onClick={showAddModal}
+          className="shadow-md shadow-blue-500/10 rounded-xl px-6 h-10 text-[12px] font-bold uppercase tracking-wider"
+        >
           Thêm Sản Phẩm
         </Button>
       </div>
@@ -356,6 +378,8 @@ const ProductManagement = () => {
         rowKey="_id"
         loading={loading}
         pagination={{ pageSize: 12 }}
+        className="sgs-admin-table"
+        size="small"
       />
 
       <Modal

@@ -4,7 +4,14 @@ const getVouchers = async (req, res, next) => {
     try {
         // Admin xem tất cả, client chỉ xem voucher còn hạn
         const showAll = req.query.all === 'true';
-        const filter = showAll ? {} : { active: true, endDate: { $gte: new Date() } };
+        const filter = showAll ? {} : { 
+            active: true, 
+            $or: [
+                { endDate: { $gte: new Date() } },
+                { endDate: null },
+                { endDate: { $exists: false } }
+            ] 
+        };
         const vouchers = await Voucher.find(filter);
         res.json(vouchers);
     } catch (error) {

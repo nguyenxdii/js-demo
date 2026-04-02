@@ -34,12 +34,22 @@ const getCartByUserId = async (req, res, next) => {
 
 const addToCart = async (req, res, next) => {
     try {
-        const { userId, productId, quantity } = req.body;
+        const { userId, productId: rawProductId, quantity } = req.body;
         const targetUserId = userId || req.user?._id;
+
+        // Trích xuất ID nếu productId là một object
+        const productId = (typeof rawProductId === 'object' && rawProductId?._id) 
+            ? rawProductId._id.toString() 
+            : rawProductId?.toString();
 
         if (!targetUserId) {
             res.status(401);
             throw new Error('User ID is required');
+        }
+
+        if (!productId) {
+            res.status(400);
+            throw new Error('Product ID is required');
         }
 
         const product = await Product.findById(productId);
@@ -53,7 +63,9 @@ const addToCart = async (req, res, next) => {
             cart = new Cart({ user: targetUserId, items: [] });
         }
 
-        const existItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+        const existItemIndex = cart.items.findIndex(item => 
+            item.product.toString() === productId
+        );
         const newQuantity = (existItemIndex > -1 ? cart.items[existItemIndex].quantity : 0) + Number(quantity);
 
         if (newQuantity > product.stock) {

@@ -142,14 +142,16 @@ const BannerManagement = () => {
 
   const columns = [
     {
-      title: "Hình ảnh",
+      title: "Hình Ảnh",
       dataIndex: "imageUrl",
       key: "imageUrl",
+      align: 'center',
       render: (url) => (
         <img 
           src={getFullImageUrl(url)} 
           alt="Banner" 
-          style={{ width: "150px", height: "60px", objectFit: "cover", borderRadius: "4px", border: "1px solid #eee" }} 
+          style={{ width: "100px", height: "40px", objectFit: "cover", borderRadius: "6px", border: "1px solid #f1f5f9" }} 
+          className="mx-auto shadow-sm"
           onError={(e) => e.target.src = "/images/cat-placeholder.png"}
         />
       ),
@@ -161,10 +163,11 @@ const BannerManagement = () => {
       render: (text) => <strong>{text}</strong>
     },
     {
-      title: "Thứ tự",
+      title: "Thứ Tự",
       dataIndex: "displayOrder",
       key: "displayOrder",
-      align: "center"
+      align: "center",
+      render: (order) => <Text className="font-mono font-bold text-slate-500">{order}</Text>
     },
     {
       title: "Trạng thái",
@@ -178,8 +181,9 @@ const BannerManagement = () => {
       ),
     },
     {
-      title: "Thao tác",
+      title: "Thao Tác",
       key: "action",
+      align: 'right',
       render: (_, record) => (
         <Space size="middle">
           <Button 
@@ -204,16 +208,23 @@ const BannerManagement = () => {
   return (
     <div className="p-6">
       <Card className="shadow-sm border-0 rounded-xl">
-        <div className="flex justify-between items-center mb-6">
-          <Title level={3} className="!mb-0">Quản lý Banner trang chủ</Title>
+        <div className="flex justify-between items-center mb-8 border-b border-gray-100 pb-4">
+          <div>
+            <h1 className="text-xl font-black uppercase tracking-tight text-slate-800 m-0 leading-none">
+              Quản Lý Banner
+            </h1>
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1 block">
+              Quản lý hình ảnh quảng cáo và sự kiện trang chủ
+            </span>
+          </div>
           <Button 
             type="primary" 
+            size="middle" 
             icon={<PlusOutlined />} 
             onClick={handleAdd}
-            size="large"
-            className="rounded-lg"
+            className="shadow-md shadow-blue-500/10 rounded-xl px-6 h-10 text-[12px] font-bold uppercase tracking-wider"
           >
-            Thêm Banner mới
+            Thêm Banner Mới
           </Button>
         </div>
 

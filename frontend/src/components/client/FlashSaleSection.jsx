@@ -12,32 +12,36 @@ const FlashSaleSection = ({ section, sliderSettings }) => {
   if (!section || !section.products || section.products.length === 0) return null;
 
   return (
-    <div className="bg-gradient-to-br from-red-600 to-orange-500 rounded-[40px] p-1 shadow-[0_20px_50px_rgba(239,68,68,0.2)] overflow-hidden relative group">
-      {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-20 -mt-20 blur-3xl group-hover:scale-125 transition-transform duration-1000"></div>
-      
-      <div className="bg-white rounded-[38px] p-8 md:p-10 relative">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-10 border-b border-gray-100 pb-8">
-          <div className="flex items-center gap-4">
-            <div className="bg-red-50 to-orange-50 p-4 rounded-3xl animate-pulse flex items-center justify-center">
-              <FireOutlined className="text-3xl text-red-600" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-tighter italic">Limited Time</span>
-                <Title level={2} className="!m-0 !text-3xl !font-black !tracking-tighter uppercase italic logo-font text-slate-900 leading-none">
-                  LỄ HỘI SĂN SALE
-                </Title>
-              </div>
-              <p className="text-gray-400 text-xs font-bold uppercase tracking-widest leading-none mt-1">Don't miss the biggest offers</p>
+    <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 overflow-hidden relative group mt-10">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-8 border-b border-gray-50 pb-6">
+        <div className="flex items-center w-full md:w-auto">
+          {/* Multi-layered Slanted Title */}
+          <div className="relative flex items-center min-w-[220px] -ml-8">
+            {/* Background Layer 1: Dark Depth */}
+            <div className="absolute inset-0 bg-[#0a191e] clip-path-slanted translate-x-2 translate-y-1 opacity-20"></div>
+            
+            {/* Background Layer 2: Orange Gradient */}
+            <div className="relative bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-8 pr-12 clip-path-slanted flex items-center shadow-lg">
+              <Title level={4} className="!m-0 !text-lg !font-bold !text-white uppercase tracking-tight">
+                FLASH SALE
+              </Title>
+              {/* Subtle shine effect */}
+              <div className="absolute top-0 right-0 h-full w-4 bg-white/10 skew-x-[-20deg] -mr-2"></div>
             </div>
           </div>
           
-          <div className="flex items-center gap-6 bg-gray-50 px-6 py-3 rounded-[24px] border border-gray-100 shadow-sm">
-             <Text className="text-[10px] font-black uppercase text-gray-500 tracking-widest hidden sm:block">Kết thúc sau:</Text>
+          <div className="ml-8 flex items-center gap-4 bg-orange-50/50 px-4 py-1.5 rounded-full border border-orange-100">
+             <Text className="text-[10px] font-semibold uppercase text-orange-600 tracking-widest hidden sm:block">Kết thúc sau:</Text>
              <CountdownTimer targetDate={new Date(Date.now() + 86400000).toISOString()} />
           </div>
         </div>
+        
+        <Link to={`/products?sectionId=${section._id}`} className="flex-shrink-0">
+          <Button type="link" className="group/btn flex items-center gap-1 font-bold text-slate-400 hover:text-orange-500 p-0 h-auto text-xs uppercase tracking-tighter">
+            Xem tất cả <RightOutlined className="text-[8px] group-hover/btn:translate-x-1 transition-transform" />
+          </Button>
+        </Link>
+      </div>
 
         <div className="relative">
           <Slider {...sliderSettings}>
@@ -49,8 +53,7 @@ const FlashSaleSection = ({ section, sliderSettings }) => {
           </Slider>
         </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
 export default FlashSaleSection;

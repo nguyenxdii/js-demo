@@ -1,299 +1,254 @@
-require('dotenv').config();
-const mongoose = require('mongoose');
-const Brand = require('../models/Brand');
-const Category = require('../models/Category');
-const Product = require('../models/Product');
-const User = require('../models/User');
-const Order = require('../models/Order');
-const Banner = require('../models/Banner');
-const Section = require('../models/Section');
+require("dotenv").config();
+const mongoose = require("mongoose");
+const Brand = require("../models/Brand");
+const Category = require("../models/Category");
+const Product = require("../models/Product");
+const User = require("../models/User");
+const Order = require("../models/Order");
+const Section = require("../models/Section");
 
 const connectDB = async () => {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI);
-        console.log('✅ MongoDB Connected for Seeding');
-    } catch (error) {
-        console.error('❌ Lỗi kết nối MongoDB:', error);
-        process.exit(1);
-    }
+  try {
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error("❌ Lỗi kết nối MongoDB:", error);
+    process.exit(1);
+  }
 };
 
-const seedBanners = async () => {
-    try {
-        await Banner.deleteMany();
-        const banners = [
-            {
-                title: "Nike Air Max Pulse - Phá vỡ giới hạn",
-                imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=2000",
-                linkUrl: "/products",
-                position: "HOME_MAIN"
-            },
-            {
-                title: "Yonex Astrox 100ZZ - Đẳng cấp nhà vô địch",
-                imageUrl: "https://images.unsplash.com/photo-1626225967045-9c76db7b6ec4?auto=format&fit=crop&q=80&w=2000",
-                linkUrl: "/products",
-                position: "HOME_MAIN"
-            },
-            {
-                title: "BST Thu Đông 2024 - Khơi dậy đam mê",
-                imageUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&q=80&w=2000",
-                linkUrl: "/products",
-                position: "HOME_MAIN"
-            }
-        ];
-        await Banner.insertMany(banners);
-        console.log('✅ Đã nạp 3 Banner quảng cáo cực chất.');
-    } catch (error) {
-        console.error('❌ Lỗi nạp Banner:', error);
-    }
+const slugify = (text) => {
+  return text
+    .toString()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[đĐ]/g, "d")
+    .replace(/[^a-z0-9 -]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
 };
 
-const seedSections = async (products) => {
-    try {
-        await Section.deleteMany();
-        if (!products || products.length === 0) return;
-
-        // Xáo trộn sản phẩm để lấy ngẫu nhiên
-        const shuffled = [...products].sort(() => 0.5 - Math.random());
-        
-        const sectionsData = [
-            {
-                title: "SĂN SALE GIỜ VÀNG",
-                description: "Cơ hội sở hữu đồ tập cao cấp với giá hời nhất trong ngày.",
-                layoutType: "FLASH_SALE",
-                active: true,
-                order: 1,
-                products: shuffled.slice(0, 4).map(p => p._id),
-                discountConfig: { active: true, label: "GIẢM SỐC", discountPercentage: 30 }
-            },
-            {
-                title: "BỘ SƯU TẬP MỚI VỀ",
-                description: "Những thiết kế mới nhất từ Nike, Adidas và Yonex.",
-                layoutType: "NEW_ARRIVAL",
-                active: true,
-                order: 2,
-                products: shuffled.slice(4, 9).map(p => p._id)
-            },
-            {
-                title: "SẢN PHẨM TIÊU BIỂU",
-                description: "Lựa chọn hàng đầu cho các vận động viên chuyên nghiệp.",
-                layoutType: "STANDARD",
-                active: true,
-                order: 3,
-                products: shuffled.slice(9, 14).map(p => p._id)
-            }
-        ];
-
-        await Section.insertMany(sectionsData);
-        console.log('✅ Đã nạp 3 Section trang chủ sinh động.');
-    } catch (error) {
-        console.error('❌ Lỗi nạp Section:', error);
-    }
+const categoryImages = {
+  "Giày Chạy Bộ (Running)": "Giày Chạy Bộ (Running).jpg",
+  "Giày Đá Bóng (Football)": "Giày Đá Bóng (Football).webp",
+  "Giày Cầu Lông (Badminton)": "Giày Cầu Lông (Badminton).jpg",
+  "Giày Bóng Rổ (Basketball)": "Giày Bóng Rổ (Basketball).jpg",
+  "Giày Tennis": "Giày Tennis.webp",
+  "Giày Tập Gym (Training)": "Giày Tập Gym (Training).webp",
+  "Áo Thun & Polo": "Áo Thun & Polo.jpg",
+  "Quần Short": "Quần Short.jpg",
+  "Áo Khoác (Jackets)": "Áo Khoác (Jackets).webp",
+  "Quần Jogger-Dài": "Quần Jogger-Dài.webp",
+  "Bộ Đồ Thể Thao (Sets)": "Bộ Đồ Thể Thao (Sets).png",
+  "Vợt Cầu Lông": "Vợt Cầu Lông.jpg",
+  "Vợt Tennis": "Vợt Tennis.webp",
+  "Vợt Pickleball": "Vợt Pickleball.jpg",
+  "Túi & Bao Vợt": "Túi & Bao Vợt.jpeg",
+  "Bình Nước": "Bình Nước.jpg",
+  "Phụ Kiện Giày": "Phụ Kiện Giày.jpeg",
+  "Thảm Tập Yoga": "Thảm Tập Yoga.png",
+  "Tạ Tay & Tạ Đòn": "Tạ Tay & Tạ Đòn.jpg",
+  "Dây Kháng Lực (Resistance Bands)": "Dây Kháng Lực (Resistance Bands).jpg",
 };
 
-const seedOrders = async (products, users) => {
-    try {
-        if (!users || users.length === 0 || !products || products.length === 0) {
-            console.log('⚠️ Không có User hoặc Product để tạo đơn hàng mẫu.');
-            return;
-        }
-
-        const ordersData = [];
-        const user = users[0];
-        
-        console.log('⏳ Đang tạo 15 đơn hàng mẫu để kiểm thử Dashboard...');
-
-        for (let i = 0; i < 15; i++) {
-            // Lấy 1-2 sản phẩm ngẫu nhiên
-            const numItems = Math.floor(Math.random() * 2) + 1;
-            const selectedProducts = [];
-            let totalAmount = 0;
-
-            for (let j = 0; j < numItems; j++) {
-                const randomP = products[Math.floor(Math.random() * products.length)];
-                const qty = Math.floor(Math.random() * 2) + 1;
-                selectedProducts.push({
-                    product: randomP._id,
-                    productName: randomP.name,
-                    productImage: randomP.mainImageUrl,
-                    quantity: qty,
-                    price: randomP.price
-                });
-                totalAmount += randomP.price * qty;
-            }
-
-            const date = new Date();
-            date.setDate(date.getDate() - Math.floor(Math.random() * 180));
-            
-            ordersData.push({
-                user: user._id,
-                orderCode: 'SGS' + Date.now() + Math.floor(Math.random() * 1000) + i,
-                fullName: user.fullName || 'User Test',
-                email: user.email || 'test@example.com',
-                phoneNumber: user.phoneNumber || '0987654321',
-                address: user.address || 'Hồ Chí Minh, Việt Nam',
-                totalAmount: totalAmount,
-                paymentMethod: i % 2 === 0 ? 'MOMO' : 'COD',
-                paymentStatus: 'PAID',
-                status: 'DELIVERED',
-                items: selectedProducts,
-                createdAt: date,
-                updatedAt: date
-            });
-        }
-
-        await Order.insertMany(ordersData);
-        console.log(`✅ Đã nạp thêm thành công 40 đơn hàng mẫu.`);
-    } catch (error) {
-        console.error('❌ Lỗi nạp đơn hàng:', error);
-    }
-};
+const productImages = [
+  "Adidas Dame 8 EXTPLY.webp",
+  "Adidas Predator Accuracy.3 TF.jpg",
+  "Adidas Ultraboost Light 23.jpeg",
+  "Asics Court FF 3 Novak.jpeg",
+  "Asics Gel-Kayano 29.jpeg",
+  "Nike Air Zoom Pegasus 40.jpeg",
+  "Nike Court Air Zoom Vapor Pro 2.jpg",
+  "Nike Mercurial Superfly 9 Academy.jpeg",
+  "Puma Future Ultimate FG-AG.jpeg",
+  "Under Armour Curry Flow 10.png",
+  "Victor P9200TD Đen Trắng.jpeg",
+  "Yonex Power Cushion 65 Z3.webp",
+];
 
 const importData = async () => {
-    try {
-        await connectDB();
-        
-        console.log('🚀 Đang kiểm tra và cập nhật dữ liệu hệ thống...');
+  try {
+    await connectDB();
 
-        // 1. Đảm bảo có tài khoản Admin mặc định
-        let adminUser = await User.findOne({ email: 'admin@gmail.com' });
-        if (!adminUser) {
-            adminUser = await User.create({
-                fullName: 'Admin Sport Gear',
-                email: 'admin@gmail.com',
-                password: '123qwe123', // Sẽ được hash tự động bởi User model pre-save hook
-                role: 'ADMIN',
-                active: true
-            });
-            console.log('✅ Khởi tạo tài khoản Admin mặc định thành công.');
-        } else {
-            console.log('ℹ️ Tài khoản Admin đã tồn tại.');
-        }
+    console.log("🧹 Đang dọn dẹp dữ liệu cũ...");
+    await Category.deleteMany();
+    await Product.deleteMany();
+    await Section.deleteMany();
+    // Giữ lại Brand nhưng đảm bảo đủ các thương hiệu yêu cầu
+    console.log("ℹ️ Đang cập nhật danh sách Thương hiệu...");
+    const brandsData = [
+      { name: "Nike", slug: "nike", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
+      { name: "Adidas", slug: "adidas", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg" },
+      { name: "Yonex", slug: "yonex", logoUrl: "https://i.pinimg.com/736x/19/64/d0/1964d07c9e625f0804ca7d890beacfa7.jpg" },
+      { name: "Puma", slug: "puma", logoUrl: "https://thumbs.dreamstime.com/b/vinnitsa-ukraine-october-puma-sport-brand-logo-icon-vinnitsa-ukraine-october-puma-sport-brand-logo-icon-vector-editorial-260965684.jpg" },
+      { name: "Asics", slug: "asics", logoUrl: "https://i.pinimg.com/736x/67/05/70/6705701c0a77e399932e4b171c11e716.jpg" },
+      { name: "Victor", slug: "victor", logoUrl: "https://images.seeklogo.com/logo-png/16/1/victor-sport-logo-png_seeklogo-168727.png" },
+      { name: "Lining", slug: "lining", logoUrl: "https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-lining-inkythuatso-21-14-57-44.jpg" },
+      { name: "Under Armour", slug: "under-armour", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/4/44/Under_Armour_logo.svg" },
+    ];
 
-        // 2. Seed Brands (Chỉ thêm nếu chưa có)
-        const brandCount = await Brand.countDocuments();
-        let brands = [];
-        if (brandCount === 0) {
-            const brandsData = [
-                { name: "Nike", slug: "nike", active: true, logoUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
-                { name: "Adidas", slug: "adidas", active: true, logoUrl: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg" },
-                { name: "Yonex", slug: "yonex", active: true, logoUrl: "https://i.pinimg.com/736x/19/64/d0/1964d07c9e625f0804ca7d890beacfa7.jpg" },
-                { name: "Puma", slug: "puma", active: true, logoUrl: "https://thumbs.dreamstime.com/b/vinnitsa-ukraine-october-puma-sport-brand-logo-icon-vinnitsa-ukraine-october-puma-sport-brand-logo-icon-vector-editorial-260965684.jpg" },
-                { name: "Asics", slug: "asics", active: true, logoUrl: "https://i.pinimg.com/736x/67/05/70/6705701c0a77e399932e4b171c11e716.jpg" },
-                { name: "Victor", slug: "victor", active: true, logoUrl: "https://images.seeklogo.com/logo-png/16/1/victor-sport-logo-png_seeklogo-168727.png" },
-                { name: "Lining", slug: "lining", active: true, logoUrl: "https://inkythuatso.com/uploads/thumbnails/800/2021/12/logo-lining-inkythuatso-21-14-57-44.jpg" }
-            ];
-            brands = await Brand.insertMany(brandsData);
-            console.log('✅ Đã nạp danh sách Thương hiệu.');
-        } else {
-            brands = await Brand.find();
-            console.log('ℹ️ Đã có dữ liệu Thương hiệu, bỏ qua bước nạp.');
-        }
-
-        // 3. Seed Categories (Chỉ thêm nếu chưa có)
-        const catCount = await Category.countDocuments();
-        let subCats = [];
-        if (catCount === 0) {
-            const mainCategories = [
-                { name: "Giày Thể Thao", slug: "giay-the-thao", active: true },
-                { name: "Trang Phục Thể Thao", slug: "trang-phục-the-thao", active: true },
-                { name: "Dụng Cụ Vợt", slug: "dung-cu-vot", active: true }
-            ];
-            const savedMainCats = await Category.insertMany(mainCategories);
-
-            const subCategoriesData = [
-                { name: "Giày Chạy Bộ (Running)", slug: "giay-chay-bo", parent: savedMainCats[0]._id, brands: [brands[0]._id, brands[1]._id] },
-                { name: "Giày Đá Bóng (Football)", slug: "giay-da-bong", parent: savedMainCats[0]._id, brands: [brands[0]._id, brands[1]._id] },
-                { name: "Vợt Cầu Lông", slug: "vot-cau-long", parent: savedMainCats[2]._id, brands: [brands[2]._id, brands[6]._id] }
-            ];
-            subCats = await Category.insertMany(subCategoriesData);
-            console.log('✅ Đã nạp danh mục Sản phẩm.');
-        } else {
-            subCats = await Category.find({ parent: { $ne: null } });
-            console.log('ℹ️ Đã có dữ liệu Danh mục, bỏ qua bước nạp.');
-        }
-
-        // 4. Seed Products (Chỉ thêm nếu chưa có)
-        const prodCount = await Product.countDocuments();
-        let products = [];
-        if (prodCount === 0) {
-            const productsData = [];
-            const addP = (catId, productName, brandId, image) => {
-                productsData.push({
-                    name: productName,
-                    slug: productName.toLowerCase().replace(/ /g, '-') + '-' + Math.floor(Math.random() * 1000),
-                    sku: 'SKU-' + Math.floor(Math.random() * 100000),
-                    category: catId,
-                    brand: brandId,
-                    price: Math.floor(Math.random() * 2000000) + 500000,
-                    stock: 50,
-                    description: `Sản phẩm mẫu ${productName}`,
-                    mainImageUrl: `/uploads/products/${image}`,
-                    active: true,
-                    gender: "Unisex"
-                });
-            };
-
-            if (subCats.length > 0) {
-                // Tạo 15 sản phẩm mẫu đa dạng
-                const samples = [
-                    { name: "Nike Air Zoom Pegasus 40", img: "https://images.unsplash.com/photo-1542291026-7eec264c27ff", price: 3200000, cat: subCats[0], brand: brands[0] },
-                    { name: "Adidas Ultraboost Light", img: "https://images.unsplash.com/photo-1587563871167-1ee9c731aefb", price: 4500000, cat: subCats[0], brand: brands[1] },
-                    { name: "Yonex Astrox 100ZZ", img: "https://images.unsplash.com/photo-1626225967045-9c76db7b6ec4", price: 3850000, cat: subCats[2], brand: brands[2] },
-                    { name: "Puma Velocity Nitro", img: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a", price: 2900000, cat: subCats[0], brand: brands[3] },
-                    { name: "Victor Thruster Ryuga", img: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab", price: 3100000, cat: subCats[2], brand: brands[5] },
-                    { name: "Lining Tectonic 9", img: "https://images.unsplash.com/photo-1617050318658-a9a3175e34cb", price: 2800000, cat: subCats[2], brand: brands[6] },
-                    { name: "Nike Mercurial Vapor 15", img: "https://images.unsplash.com/photo-1511746315387-c4a76990fdce", price: 5600000, cat: subCats[1], brand: brands[0] },
-                    { name: "Adidas Predator Elite", img: "https://images.unsplash.com/photo-1539185441755-769473a23570", price: 6200000, cat: subCats[1], brand: brands[1] },
-                    { name: "Asics Gel-Kayano 30", img: "https://images.unsplash.com/photo-1608231387042-66d1773070a5", price: 3990000, cat: subCats[0], brand: brands[4] },
-                    { name: "Nike Dri-FIT Adv", img: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f", price: 1200000, cat: subCats[1], brand: brands[0] },
-                    { name: "Adidas Z.N.E Hoodie", img: "https://images.unsplash.com/photo-1556821840-3a63f95609a7", price: 2500000, cat: subCats[1], brand: brands[1] },
-                    { name: "Yonex Power Cushion 65 Z3", img: "https://images.unsplash.com/photo-1534346917637-23b0923e200c", price: 2650000, cat: subCats[2], brand: brands[2] },
-                    { name: "Puma King Ultimate", img: "https://images.unsplash.com/photo-1543508282-6319a3e2621f", price: 4200000, cat: subCats[1], brand: brands[3] },
-                    { name: "Asics Metaspeed Sky+", img: "https://images.unsplash.com/photo-1606107557195-0e29a4b5b4aa", price: 6500000, cat: subCats[0], brand: brands[4] },
-                    { name: "Victor Auraspeed 100X", img: "https://images.unsplash.com/photo-1626225967045-9c76db7b6ec4", price: 3400000, cat: subCats[2], brand: brands[5] }
-                ];
-
-                samples.forEach(s => {
-                    productsData.push({
-                        name: s.name,
-                        slug: s.name.toLowerCase().replace(/ /g, '-') + '-' + Math.floor(Math.random() * 1000),
-                        sku: 'SKU-' + Math.floor(Math.random() * 100000),
-                        category: s.cat._id,
-                        brand: s.brand._id,
-                        price: s.price,
-                        oldPrice: s.price + 500000,
-                        stock: 100,
-                        description: `${s.name} là sản phẩm thể thao cao cấp nhất, mang lại hiệu suất vượt trội cho vận động viên chuyên nghiệp.`,
-                        mainImageUrl: s.img,
-                        active: true,
-                        isHot: Math.random() > 0.5,
-                        gender: "Unisex"
-                    });
-                });
-            }
-
-            products = await Product.insertMany(productsData);
-            console.log(`✅ Đã nạp ${products.length} Sản phẩm mẫu cao cấp.`);
-        } else {
-            products = await Product.find();
-            console.log('ℹ️ Đã có dữ liệu Sản phẩm, bỏ qua bước nạp.');
-        }
-
-        // 5. Nạp Banners và Sections cho trang chủ
-        await seedBanners();
-        await seedSections(products);
-
-        // 6. Luôn nạp thêm Đơn hàng mẫu mỗi khi chạy lệnh seed (theo yêu cầu)
-        const users = await User.find({ role: 'ADMIN' }).limit(1);
-        await seedOrders(products, users);
-
-        console.log('🎉 TOÀN BỘ QUÁ TRÌNH CẬP NHẬT HOÀN TẤT!');
-        process.exit();
-    } catch (error) {
-        console.error('❌ Lỗi Seeding:', error);
-        process.exit(1);
+    for (const b of brandsData) {
+      await Brand.findOneAndUpdate({ name: b.name }, b, { upsert: true, new: true });
     }
+    const brands = await Brand.find();
+    console.log(`✅ Đã cập nhật ${brands.length} thương hiệu.`);
+
+    // 1. Tạo 5 Danh mục cấp 1
+    console.log("📁 Đang tạo danh mục cấp 1...");
+    const lv1Names = [
+      "Giày Thể Thao",
+      "Trang Phục Thể Thao",
+      "Dụng Cụ Vợt",
+      "Phụ Kiện Thể Thao",
+      "Thiết Bị & Máy Tập",
+    ];
+
+    const lv1Cats = [];
+    for (const name of lv1Names) {
+      const cat = await Category.create({
+        name,
+        slug: slugify(name),
+        active: true,
+      });
+      lv1Cats.push(cat);
+    }
+
+    // 2. Tạo Danh mục cấp 2
+    console.log("📁 Đang tạo danh mục cấp 2...");
+    const lv2Config = [
+      {
+        parent: lv1Cats[0],
+        subs: ["Giày Chạy Bộ (Running)", "Giày Đá Bóng (Football)", "Giày Cầu Lông (Badminton)", "Giày Bóng Rổ (Basketball)", "Giày Tennis", "Giày Tập Gym (Training)"]
+      },
+      {
+        parent: lv1Cats[1],
+        subs: ["Áo Thun & Polo", "Quần Short", "Áo Khoác (Jackets)", "Quần Jogger-Dài", "Bộ Đồ Thể Thao (Sets)"]
+      },
+      {
+        parent: lv1Cats[2],
+        subs: ["Vợt Cầu Lông", "Vợt Tennis", "Vợt Pickleball", "Túi & Bao Vợt"]
+      },
+      {
+        parent: lv1Cats[3],
+        subs: ["Bình Nước", "Phụ Kiện Giày", "Tất & Vớ"]
+      },
+      {
+        parent: lv1Cats[4],
+        subs: ["Thảm Tập Yoga", "Tạ Tay & Tạ Đòn", "Dây Kháng Lực (Resistance Bands)"]
+      }
+    ];
+
+    const allLv2Cats = [];
+    for (const config of lv2Config) {
+      for (const subName of config.subs) {
+        const img = categoryImages[subName] || "Phụ Kiện Giày.jpeg";
+        const cat = await Category.create({
+          name: subName,
+          slug: slugify(subName),
+          parent: config.parent._id,
+          imageUrl: `/uploads/categories/${img}`,
+          active: true,
+          brands: brands.map(b => b._id), // Gán tất cả brand cho danh mục
+        });
+        allLv2Cats.push(cat);
+      }
+    }
+    console.log(`✅ Đã tạo ${allLv2Cats.length} danh mục cấp 2.`);
+
+    // 3. Tạo 150 Sản phẩm
+    console.log("👟 Đang tạo 150 sản phẩm mẫu...");
+    const productsData = [];
+    const productNames = [
+      "Pro Gear", "Elite Series", "Performance Plus", "Classic Vibe", "Turbo Edition",
+      "Dynamic Flow", "Power Strike", "Swift Motion", "Ultra Comfort", "Max Support",
+      "Prime Fit", "Aero Design", "Stealth Black", "Ocean Blue", "Crimson Red",
+      "Legacy Edition", "Future Tech", "Zen Spirit", "Iron Strength", "Velocity"
+    ];
+
+    for (let i = 0; i < 150; i++) {
+      const cat = allLv2Cats[Math.floor(Math.random() * allLv2Cats.length)];
+      const brand = brands[Math.floor(Math.random() * brands.length)];
+      const suffix = productNames[Math.floor(Math.random() * productNames.length)];
+      
+      // Tạo tên tự nhiên hơn: [Loại] [Thương hiệu] [Dòng]
+      let name = "";
+      if (cat.name.includes("Giày")) name = `${cat.name} ${brand.name} ${suffix}`;
+      else if (cat.name.includes("Áo") || cat.name.includes("Quần") || cat.name.includes("Bộ Đồ")) name = `${cat.name} ${brand.name} ${suffix}`;
+      else if (cat.name.includes("Vợt")) name = `${cat.name} ${brand.name} ${suffix}`;
+      else name = `${brand.name} ${cat.name} ${suffix}`;
+      
+      name += ` Gen ${Math.floor(Math.random() * 5) + 1}`; // Thêm hậu tố đời sản phẩm
+      
+      const price = Math.floor(Math.random() * 450) * 10000 + 200000;
+      const image = productImages[i % productImages.length];
+
+      productsData.push({
+        name,
+        slug: slugify(name) + "-" + Date.now() + i,
+        sku: `SGS-${1000 + i}`,
+        description: `Đây là mô tả chi tiết cho sản phẩm ${name}. Sản phẩm chất lượng cao dành cho người chơi thể thao chuyên nghiệp và phong trào.`,
+        price,
+        oldPrice: Math.random() > 0.5 ? price * 1.2 : undefined,
+        stock: Math.floor(Math.random() * 100) + 10,
+        mainImageUrl: `/uploads/products/${image}`,
+        category: cat._id,
+        brand: brand._id,
+        active: true,
+        isHot: Math.random() > 0.8,
+        isNewProduct: Math.random() > 0.5,
+        gender: ["Nam", "Nữ", "Unisex"][Math.floor(Math.random() * 3)],
+      });
+    }
+
+    const createdProducts = await Product.insertMany(productsData);
+    console.log(`✅ Đã nạp thành công 150 sản phẩm.`);
+
+    // 4. Tạo Section đơn giản
+    console.log("📺 Đang tạo các Section trang chủ...");
+    const sections = [
+      {
+        title: "Sản phẩm mới nhất",
+        type: "NEW_ARRIVAL",
+        layoutType: "NEW_ARRIVAL",
+        order: 1,
+        products: createdProducts.slice(0, 10).map(p => p._id)
+      },
+      {
+        title: "Flash Sale cuối tuần",
+        type: "FLASH_SALE_1",
+        layoutType: "FLASH_SALE",
+        order: 2,
+        discountConfig: { active: true, label: "Giảm tới 30%", discountPercentage: 30 },
+        products: createdProducts.slice(20, 30).map(p => p._id)
+      },
+      {
+        title: "Bán chạy nhất",
+        type: "TOP_SELLING",
+        layoutType: "BEST_SELLER",
+        order: 3,
+        products: createdProducts.slice(40, 50).map(p => p._id)
+      },
+      {
+        title: "Gợi ý cho bạn",
+        type: "CUSTOM",
+        layoutType: "STANDARD",
+        order: 4,
+        products: createdProducts.slice(60, 75).map(p => p._id)
+      }
+    ];
+
+    await Section.insertMany(sections);
+    console.log("✅ Đã tạo 4 Section mẫu.");
+
+    console.log("🎉 QUÁ TRÌNH SEED DỮ LIỆU HOÀN TẤT!");
+    process.exit(0);
+  } catch (error) {
+    console.error("❌ Lỗi trong quá trình nạp dữ liệu:", error);
+    process.exit(1);
+  }
 };
 
 importData();
+

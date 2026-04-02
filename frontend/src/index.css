@@ -1,12 +1,12 @@
 @import "tailwindcss";
 
 @theme {
-  --font-sans: 'Outfit', sans-serif;
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 }
 
 body {
   margin: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
@@ -14,11 +14,11 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   margin: 0;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 }
 
 input, button, select, textarea {
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Be Vietnam Pro', system-ui, -apple-system, sans-serif;
 }
 
 .logo-font {
@@ -299,3 +299,7 @@ input, button, select, textarea {
 }
 .ant-pagination-item-active { border-color: #2563eb !important; }
 .ant-pagination-item-active a { color: #2563eb !important; }
+
+.clip-path-slanted {
+  clip-path: polygon(0 0, 100% 0, 88% 100%, 0 100%);
+}
