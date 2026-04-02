@@ -72,12 +72,29 @@ const importData = async () => {
   try {
     await connectDB();
 
-    console.log("🧹 Đang dọn dẹp dữ liệu cũ...");
-    await Category.deleteMany();
-    await Product.deleteMany();
-    await Section.deleteMany();
-    // Giữ lại Brand nhưng đảm bảo đủ các thương hiệu yêu cầu
-    console.log("ℹ️ Đang cập nhật danh sách Thương hiệu...");
+    console.log("ℹ️ Đang kiểm tra dữ liệu hiện có...");
+    const existingProductsCount = await Product.countDocuments();
+    
+    // 0. Tạo/Cập nhật tài khoản Admin
+    console.log("👤 Đang thiết lập tài khoản Admin...");
+    const adminEmail = 'admin@gmail.com';
+    let adminUser = await User.findOne({ email: adminEmail });
+    if (!adminUser) {
+        adminUser = await User.create({
+            fullName: 'Admin Sport Gear',
+            email: adminEmail,
+            password: '123wqe123',
+            role: 'ADMIN',
+            active: true
+        });
+        console.log("✅ Đã tạo tài khoản Admin mới: admin@gmail.com / 123wqe123");
+    } else {
+        adminUser.password = '123wqe123';
+        await adminUser.save();
+        console.log("✅ Đã cập nhật mật khẩu Admin: admin@gmail.com / 123wqe123");
+    }
+
+    // Cập nhật Thương hiệu
     const brandsData = [
       { name: "Nike", slug: "nike", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/a/a6/Logo_NIKE.svg" },
       { name: "Adidas", slug: "adidas", logoUrl: "https://upload.wikimedia.org/wikipedia/commons/2/20/Adidas_Logo.svg" },
@@ -93,162 +110,113 @@ const importData = async () => {
       await Brand.findOneAndUpdate({ name: b.name }, b, { upsert: true, new: true });
     }
     const brands = await Brand.find();
-    console.log(`✅ Đã cập nhật ${brands.length} thương hiệu.`);
 
-    // 1. Tạo 5 Danh mục cấp 1
-    console.log("📁 Đang tạo danh mục cấp 1...");
-    const lv1Names = [
-      "Giày Thể Thao",
-      "Trang Phục Thể Thao",
-      "Dụng Cụ Vợt",
-      "Phụ Kiện Thể Thao",
-      "Thiết Bị & Máy Tập",
-    ];
+    let products = [];
+    if (existingProductsCount < 10) {
+        console.log("👟 Dữ liệu sản phẩm trống, đang tạo 150 sản phẩm mẫu...");
+        // Tạo Danh mục
+        const lv1Names = ["Giày Thể Thao", "Trang Phục Thể Thao", "Dụng Cụ Vợt", "Phụ Kiện Thể Thao", "Thiết Bị & Máy Tập"];
+        const lv1Cats = [];
+        for (const name of lv1Names) {
+          const cat = await Category.create({ name, slug: slugify(name), active: true });
+          lv1Cats.push(cat);
+        }
 
-    const lv1Cats = [];
-    for (const name of lv1Names) {
-      const cat = await Category.create({
-        name,
-        slug: slugify(name),
-        active: true,
-      });
-      lv1Cats.push(cat);
+        const lv2Config = [
+          { parent: lv1Cats[0], subs: ["Giày Chạy Bộ (Running)", "Giày Đá Bóng (Football)", "Giày Cầu Lông (Badminton)", "Giày Bóng Rổ (Basketball)", "Giày Tennis", "Giày Tập Gym (Training)"] },
+          { parent: lv1Cats[1], subs: ["Áo Thun & Polo", "Quần Short", "Áo Khoác (Jackets)", "Quần Jogger-Dài", "Bộ Đồ Thể Thao (Sets)"] },
+          { parent: lv1Cats[2], subs: ["Vợt Cầu Lông", "Vợt Tennis", "Vợt Pickleball", "Túi & Bao Vợt"] },
+          { parent: lv1Cats[3], subs: ["Bình Nước", "Phụ Kiện Giày", "Tất & Vớ"] },
+          { parent: lv1Cats[4], subs: ["Thảm Tập Yoga", "Tạ Tay & Tạ Đòn", "Dây Kháng Lực (Resistance Bands)"] }
+        ];
+
+        const allLv2Cats = [];
+        for (const config of lv2Config) {
+          for (const subName of config.subs) {
+            const img = categoryImages[subName] || "Phụ Kiện Giày.jpeg";
+            const cat = await Category.create({
+              name: subName, slug: slugify(subName), parent: config.parent._id,
+              imageUrl: `/uploads/categories/${img}`, active: true, brands: brands.map(b => b._id)
+            });
+            allLv2Cats.push(cat);
+          }
+        }
+
+        const productsData = [];
+        const productNames = ["Pro", "Elite", "Plus", "Classic", "Turbo", "Swift", "Ultra", "Max", "Prime", "Velocity"];
+        for (let i = 0; i < 150; i++) {
+          const cat = allLv2Cats[Math.floor(Math.random() * allLv2Cats.length)];
+          const brand = brands[Math.floor(Math.random() * brands.length)];
+          const name = `${cat.name} ${brand.name} ${productNames[i % 10]} Gen ${Math.floor(Math.random() * 5) + 1}`;
+          const price = Math.floor(Math.random() * 450) * 10000 + 200000;
+          productsData.push({
+            name, slug: slugify(name) + "-" + Date.now() + i, sku: `SGS-${1000 + i}`,
+            description: `Mô tả sản phẩm ${name}`, price, stock: 100,
+            mainImageUrl: `/uploads/products/${productImages[i % productImages.length]}`,
+            category: cat._id, brand: brand._id, active: true
+          });
+        }
+        products = await Product.insertMany(productsData);
+    } else {
+        products = await Product.find().limit(100);
+        console.log(`ℹ️ Đã có ${existingProductsCount} sản phẩm, bỏ qua bước tạo mới.`);
     }
 
-    // 2. Tạo Danh mục cấp 2
-    console.log("📁 Đang tạo danh mục cấp 2...");
-    const lv2Config = [
-      {
-        parent: lv1Cats[0],
-        subs: ["Giày Chạy Bộ (Running)", "Giày Đá Bóng (Football)", "Giày Cầu Lông (Badminton)", "Giày Bóng Rổ (Basketball)", "Giày Tennis", "Giày Tập Gym (Training)"]
-      },
-      {
-        parent: lv1Cats[1],
-        subs: ["Áo Thun & Polo", "Quần Short", "Áo Khoác (Jackets)", "Quần Jogger-Dài", "Bộ Đồ Thể Thao (Sets)"]
-      },
-      {
-        parent: lv1Cats[2],
-        subs: ["Vợt Cầu Lông", "Vợt Tennis", "Vợt Pickleball", "Túi & Bao Vợt"]
-      },
-      {
-        parent: lv1Cats[3],
-        subs: ["Bình Nước", "Phụ Kiện Giày", "Tất & Vớ"]
-      },
-      {
-        parent: lv1Cats[4],
-        subs: ["Thảm Tập Yoga", "Tạ Tay & Tạ Đòn", "Dây Kháng Lực (Resistance Bands)"]
-      }
-    ];
+    // 5. TẠO 100 ĐƠN HÀNG MẪU ĐỂ THỐNG KÊ
+    console.log("📊 Đang tạo 100 đơn hàng mẫu rải rác trong 90 ngày...");
+    const ordersData = [];
+    const statuses = ['DELIVERED', 'DELIVERED', 'DELIVERED', 'SHIPPED', 'PROCESSING', 'CANCELLED'];
+    
+    for (let i = 0; i < 100; i++) {
+        const itemCount = Math.floor(Math.random() * 3) + 1;
+        const items = [];
+        let subTotal = 0;
+        
+        for (let j = 0; j < itemCount; j++) {
+            const prod = products[Math.floor(Math.random() * products.length)];
+            const qty = Math.floor(Math.random() * 2) + 1;
+            items.push({
+                product: prod._id,
+                productName: prod.name,
+                productImage: prod.mainImageUrl,
+                quantity: qty,
+                price: prod.price
+            });
+            subTotal += prod.price * qty;
+        }
 
-    const allLv2Cats = [];
-    for (const config of lv2Config) {
-      for (const subName of config.subs) {
-        const img = categoryImages[subName] || "Phụ Kiện Giày.jpeg";
-        const cat = await Category.create({
-          name: subName,
-          slug: slugify(subName),
-          parent: config.parent._id,
-          imageUrl: `/uploads/categories/${img}`,
-          active: true,
-          brands: brands.map(b => b._id), // Gán tất cả brand cho danh mục
+        const shippingFee = subTotal > 1000000 ? 0 : 30000;
+        const status = statuses[Math.floor(Math.random() * statuses.length)];
+        const date = new Date();
+        date.setDate(date.getDate() - Math.floor(Math.random() * 90));
+
+        ordersData.push({
+            user: adminUser._id,
+            orderCode: `ORDER-${Date.now()}-${i}`,
+            fullName: `Khách hàng ${i + 1}`,
+            email: `customer${i}@example.com`,
+            phoneNumber: '0901234567',
+            address: 'Địa chỉ mẫu, Việt Nam',
+            items,
+            totalAmount: subTotal + shippingFee,
+            shippingFee,
+            status,
+            paymentMethod: Math.random() > 0.5 ? 'COD' : 'MOMO',
+            paymentStatus: status === 'DELIVERED' ? 'PAID' : 'UNPAID',
+            createdAt: date,
+            updatedAt: date
         });
-        allLv2Cats.push(cat);
-      }
-    }
-    console.log(`✅ Đã tạo ${allLv2Cats.length} danh mục cấp 2.`);
-
-    // 3. Tạo 150 Sản phẩm
-    console.log("👟 Đang tạo 150 sản phẩm mẫu...");
-    const productsData = [];
-    const productNames = [
-      "Pro Gear", "Elite Series", "Performance Plus", "Classic Vibe", "Turbo Edition",
-      "Dynamic Flow", "Power Strike", "Swift Motion", "Ultra Comfort", "Max Support",
-      "Prime Fit", "Aero Design", "Stealth Black", "Ocean Blue", "Crimson Red",
-      "Legacy Edition", "Future Tech", "Zen Spirit", "Iron Strength", "Velocity"
-    ];
-
-    for (let i = 0; i < 150; i++) {
-      const cat = allLv2Cats[Math.floor(Math.random() * allLv2Cats.length)];
-      const brand = brands[Math.floor(Math.random() * brands.length)];
-      const suffix = productNames[Math.floor(Math.random() * productNames.length)];
-      
-      // Tạo tên tự nhiên hơn: [Loại] [Thương hiệu] [Dòng]
-      let name = "";
-      if (cat.name.includes("Giày")) name = `${cat.name} ${brand.name} ${suffix}`;
-      else if (cat.name.includes("Áo") || cat.name.includes("Quần") || cat.name.includes("Bộ Đồ")) name = `${cat.name} ${brand.name} ${suffix}`;
-      else if (cat.name.includes("Vợt")) name = `${cat.name} ${brand.name} ${suffix}`;
-      else name = `${brand.name} ${cat.name} ${suffix}`;
-      
-      name += ` Gen ${Math.floor(Math.random() * 5) + 1}`; // Thêm hậu tố đời sản phẩm
-      
-      const price = Math.floor(Math.random() * 450) * 10000 + 200000;
-      const image = productImages[i % productImages.length];
-
-      productsData.push({
-        name,
-        slug: slugify(name) + "-" + Date.now() + i,
-        sku: `SGS-${1000 + i}`,
-        description: `Đây là mô tả chi tiết cho sản phẩm ${name}. Sản phẩm chất lượng cao dành cho người chơi thể thao chuyên nghiệp và phong trào.`,
-        price,
-        oldPrice: Math.random() > 0.5 ? price * 1.2 : undefined,
-        stock: Math.floor(Math.random() * 100) + 10,
-        mainImageUrl: `/uploads/products/${image}`,
-        category: cat._id,
-        brand: brand._id,
-        active: true,
-        isHot: Math.random() > 0.8,
-        isNewProduct: Math.random() > 0.5,
-        gender: ["Nam", "Nữ", "Unisex"][Math.floor(Math.random() * 3)],
-      });
     }
 
-    const createdProducts = await Product.insertMany(productsData);
-    console.log(`✅ Đã nạp thành công 150 sản phẩm.`);
+    await Order.insertMany(ordersData);
+    console.log("✅ Đã nạp thành công 100 đơn hàng mẫu.");
 
-    // 4. Tạo Section đơn giản
-    console.log("📺 Đang tạo các Section trang chủ...");
-    const sections = [
-      {
-        title: "Sản phẩm mới nhất",
-        type: "NEW_ARRIVAL",
-        layoutType: "NEW_ARRIVAL",
-        order: 1,
-        products: createdProducts.slice(0, 10).map(p => p._id)
-      },
-      {
-        title: "Flash Sale cuối tuần",
-        type: "FLASH_SALE_1",
-        layoutType: "FLASH_SALE",
-        order: 2,
-        discountConfig: { active: true, label: "Giảm tới 30%", discountPercentage: 30 },
-        products: createdProducts.slice(20, 30).map(p => p._id)
-      },
-      {
-        title: "Bán chạy nhất",
-        type: "TOP_SELLING",
-        layoutType: "BEST_SELLER",
-        order: 3,
-        products: createdProducts.slice(40, 50).map(p => p._id)
-      },
-      {
-        title: "Gợi ý cho bạn",
-        type: "CUSTOM",
-        layoutType: "STANDARD",
-        order: 4,
-        products: createdProducts.slice(60, 75).map(p => p._id)
-      }
-    ];
-
-    await Section.insertMany(sections);
-    console.log("✅ Đã tạo 4 Section mẫu.");
-
-    console.log("🎉 QUÁ TRÌNH SEED DỮ LIỆU HOÀN TẤT!");
+    console.log("🎉 XONG! Dữ liệu đã sẵn sàng cho thống kê.");
     process.exit(0);
   } catch (error) {
-    console.error("❌ Lỗi trong quá trình nạp dữ liệu:", error);
+    console.error("❌ Lỗi Seeder:", error);
     process.exit(1);
   }
 };
 
 importData();
-
