@@ -1,0 +1,22 @@
+# Thư mục build
+node_modules/
+dist/
+build/
+target/
+
+# Biến môi trường
+.env
+.env.local
+
+# File hệ thống
+.DS_Store
+Thumbs.db
+
+# Config IDE
+.vscode/
+.idea/
+*.iml
+
+# Uploads
+backend/upload/*
+!backend/upload/.gitkeep
