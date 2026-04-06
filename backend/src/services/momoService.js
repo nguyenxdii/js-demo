@@ -43,12 +43,16 @@ const createPayment = async (orderId, amount, customOrderInfo = null) => {
     };
 
     try {
-        console.log("Momo Request Body (Full):", JSON.stringify(requestBody, null, 2));
-        const response = await axios.post(endpoint, requestBody);
+        console.log(`[MOMO] Đang gọi API: ${endpoint} cho đơn hàng: ${orderIdStr}`);
+        const response = await axios.post(endpoint, requestBody, { timeout: 30000 });
         return response.data;
     } catch (error) {
         const errorData = error.response ? error.response.data : error.message;
-        console.error("Momo API Error (Detailed):", JSON.stringify(errorData, null, 2));
+        if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
+            console.error(`[MOMO] Cổng thanh toán MoMo quá hạn (30s) cho đơn hàng ${orderIdStr}`);
+            throw new Error('Kết nối tới cổng thanh toán MoMo quá hạn (30 giây). Bạn có thể thử lại hoặc chọn phương thức Thanh toán sau (nếu có).');
+        }
+        console.error(`[MOMO] Lỗi API từ ${endpoint}:`, JSON.stringify(errorData, null, 2));
         throw new Error('Không thể tạo liên kết thanh toán Momo. Vui lòng thử lại sau.');
     }
 };

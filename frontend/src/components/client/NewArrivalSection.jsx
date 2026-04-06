@@ -22,7 +22,7 @@ const NewArrivalSection = ({ section, sliderSettings }) => {
             {/* Background Layer 2: Orange Gradient */}
             <div className="relative bg-gradient-to-r from-orange-500 to-amber-500 text-white py-2.5 px-8 pr-12 clip-path-slanted flex items-center shadow-lg">
               <Title level={4} className="!m-0 !text-lg !font-bold !text-white uppercase tracking-tight">
-                MỚI NHẤT
+                {section.title || "MỚI NHẤT"}
               </Title>
               {/* Subtle shine effect */}
               <div className="absolute top-0 right-0 h-full w-4 bg-white/10 skew-x-[-20deg] -mr-2"></div>

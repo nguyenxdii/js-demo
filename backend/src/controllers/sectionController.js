@@ -1,4 +1,5 @@
 const Section = require('../models/Section');
+const { applySectionDiscounts } = require('../utils/discountHelper');
 
 const getSections = async (req, res, next) => {
     try {
@@ -6,6 +7,12 @@ const getSections = async (req, res, next) => {
             .populate('products')
             .populate('category')
             .sort({ order: 1 });
+
+        // Đối với Admin, chúng ta thường muốn xem giá gốc, 
+        // nhưng nếu API này dùng chung cho client thì cần cân nhắc.
+        // Ở đây giả định getSections (không có filter active) có thể dùng cho Admin Dashboard.
+        // Tuy nhiên, để an toàn cho hiển thị, tôi sẽ không áp dụng giảm giá ở đây 
+        // trừ khi bạn muốn Admin cũng thấy giá đã giảm.
         res.json(sections);
     } catch (error) {
         next(error);
@@ -18,7 +25,18 @@ const getActiveSections = async (req, res, next) => {
             .populate('products')
             .populate('category')
             .sort({ order: 1 });
-        res.json(sections);
+            
+        // Áp dụng giảm giá cho từng sản phẩm trong mỗi section
+        const processedSections = await Promise.all(sections.map(async (section) => {
+            const sectionObj = section.toObject();
+            if (sectionObj.products && sectionObj.products.length > 0) {
+                // Chúng ta truyền isAdmin=false vì đây là trang client
+                sectionObj.products = await applySectionDiscounts(sectionObj.products, false);
+            }
+            return sectionObj;
+        }));
+
+        res.json(processedSections);
     } catch (error) {
         next(error);
     }

@@ -548,13 +548,28 @@ const ProductDetail = () => {
                 </Text>
               </div>
 
-              <div className="bg-red-50 p-6 rounded-2xl mb-8">
+              <div className="bg-red-50 p-6 rounded-2xl mb-8 relative overflow-hidden">
+                {product.oldPrice && product.oldPrice > product.price && (
+                  <div className="flex items-center gap-3 mb-1">
+                    <Text delete className="text-gray-400 text-lg">
+                      {formatPrice(product.oldPrice)}
+                    </Text>
+                    <Tag color="red" className="rounded-full font-bold border-none px-3 bg-red-500 text-white animate-pulse">
+                      -{Math.round(((product.oldPrice - product.price) / product.oldPrice) * 100)}%
+                    </Tag>
+                  </div>
+                )}
                 <div className="text-red-600 font-bold text-4xl mb-1">
                   {formatPrice(product.price)}
                 </div>
-                <Text type="secondary" className="text-xs italic uppercase">
-                  Giá đã bao gồm thuế VAT
+                <Text type="secondary" className="text-[10px] italic uppercase tracking-wider opacity-70">
+                  Giá đã bao gồm thuế VAT và phí môi trường
                 </Text>
+                
+                {/* Decorative background element */}
+                <div className="absolute -right-4 -bottom-4 opacity-5 rotate-12">
+                   <ShoppingCartOutlined style={{ fontSize: '100px' }} />
+                </div>
               </div>
 
               <div className="mb-8">

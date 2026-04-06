@@ -76,8 +76,8 @@ const OrdersPage = () => {
   const handleGlobalRefresh = async () => {
     setCheckingOrderId("all");
     
-    // Tìm các đơn hàng MoMo đang pending để check status trươc
-    const pendingMomoOrders = orders.filter(o => o.status === "PENDING" && o.payment?.paymentMethod === "MOMO");
+    // Tìm các đơn hàng MoMo đang pending để check status trước
+    const pendingMomoOrders = orders.filter(o => o.status === "PENDING" && o.paymentMethod === "MOMO");
     
     try {
       if (pendingMomoOrders.length > 0) {

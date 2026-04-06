@@ -89,9 +89,12 @@ export default function ProductList() {
           try {
              const allSections = await sectionService.getAllSections();
              const currentSection = allSections.find(s => (s._id || s.id) === sectionId);
-             if (currentSection) {
-                setCurrentCategory({ name: currentSection.title || currentSection.name, isSection: true });
-             }
+              if (currentSection) {
+                setCurrentCategory({ 
+                  name: currentSection.title || currentSection.name || "Section", 
+                  isSection: true 
+                });
+              }
           } catch (err) {
             setCurrentCategory(null);
           }

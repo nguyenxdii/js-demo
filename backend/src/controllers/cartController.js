@@ -1,6 +1,32 @@
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 
+const { applySectionDiscounts } = require('../utils/discountHelper');
+
+const getProcessedCart = async (cart) => {
+    const populatedProducts = cart.items.map(i => i.product);
+    const productsWithDiscounts = await applySectionDiscounts(populatedProducts);
+
+    const cartObj = cart.toObject();
+    cartObj.id = cartObj._id;
+    let totalAmount = 0;
+    cartObj.items = cartObj.items.map((item, index) => {
+        const productWithDiscount = productsWithDiscounts[index];
+        const price = productWithDiscount?.price || 0;
+        totalAmount += price * item.quantity;
+        return {
+            ...item,
+            id: item._id,
+            productName: item.product?.name,
+            productImage: item.product?.mainImageUrl,
+            productSlug: item.product?.slug,
+            price: price,
+        };
+    });
+    cartObj.totalAmount = totalAmount;
+    return cartObj;
+};
+
 const getCartByUserId = async (req, res, next) => {
     try {
         const userId = req.params.userId;
@@ -9,24 +35,8 @@ const getCartByUserId = async (req, res, next) => {
             cart = await Cart.create({ user: userId, items: [] });
         }
         
-        const cartObj = cart.toObject();
-        cartObj.id = cartObj._id;
-        let totalAmount = 0;
-        cartObj.items = cartObj.items.map(item => {
-            const price = item.product?.price || 0;
-            totalAmount += price * item.quantity;
-            return {
-                ...item,
-                id: item._id,
-                productName: item.product?.name,
-                productImage: item.product?.mainImageUrl,
-                productSlug: item.product?.slug,
-                price: price,
-            };
-        });
-        cartObj.totalAmount = totalAmount;
-
-        res.json(cartObj);
+        const processedCart = await getProcessedCart(cart);
+        res.json(processedCart);
     } catch (error) {
         next(error);
     }
@@ -81,23 +91,8 @@ const addToCart = async (req, res, next) => {
 
         await cart.save();
         const updatedCart = await Cart.findById(cart._id).populate('items.product');
-        const cartObj = updatedCart.toObject();
-        cartObj.id = cartObj._id;
-        let totalAmount = 0;
-        cartObj.items = cartObj.items.map(item => {
-            const price = item.product?.price || 0;
-            totalAmount += price * item.quantity;
-            return {
-                ...item,
-                id: item._id,
-                productName: item.product?.name,
-                productImage: item.product?.mainImageUrl,
-                productSlug: item.product?.slug,
-                price: price,
-            };
-        });
-        cartObj.totalAmount = totalAmount;
-        res.status(201).json(cartObj);
+        const processedCart = await getProcessedCart(updatedCart);
+        res.status(201).json(processedCart);
     } catch (error) {
         next(error);
     }
@@ -131,23 +126,8 @@ const updateCartItem = async (req, res, next) => {
                 }
                 await cart.save();
                 const updatedCart = await Cart.findById(cart._id).populate('items.product');
-                const cartObj = updatedCart.toObject();
-                cartObj.id = cartObj._id;
-                let totalAmount = 0;
-                cartObj.items = cartObj.items.map(item => {
-                    const price = item.product?.price || 0;
-                    totalAmount += price * item.quantity;
-                    return {
-                        ...item,
-                        id: item._id,
-                        productName: item.product?.name,
-                        productImage: item.product?.mainImageUrl,
-                        productSlug: item.product?.slug,
-                        price: price,
-                    };
-                });
-                cartObj.totalAmount = totalAmount;
-                res.json(cartObj);
+                const processedCart = await getProcessedCart(updatedCart);
+                res.json(processedCart);
             } else {
                 res.status(404);
                 throw new Error('Sản phẩm không có trong giỏ hàng');
@@ -176,23 +156,8 @@ const removeCartItem = async (req, res, next) => {
             cart.items = cart.items.filter(item => item._id.toString() !== itemId);
             await cart.save();
             const updatedCart = await Cart.findById(cart._id).populate('items.product');
-            const cartObj = updatedCart.toObject();
-            cartObj.id = cartObj._id;
-            let totalAmount = 0;
-            cartObj.items = cartObj.items.map(item => {
-                const price = item.product?.price || 0;
-                totalAmount += price * item.quantity;
-                return {
-                    ...item,
-                    id: item._id,
-                    productName: item.product?.name,
-                    productImage: item.product?.mainImageUrl,
-                    productSlug: item.product?.slug,
-                    price: price,
-                };
-            });
-            cartObj.totalAmount = totalAmount;
-            res.json(cartObj);
+            const processedCart = await getProcessedCart(updatedCart);
+            res.json(processedCart);
         } else {
             res.status(404);
             throw new Error('Giỏ hàng trống');

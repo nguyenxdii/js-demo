@@ -3,6 +3,9 @@ const Category = require('../models/Category');
 const Brand = require('../models/Brand');
 const Order = require('../models/Order');
 const Section = require('../models/Section');
+const mongoose = require('mongoose');
+
+const { applySectionDiscounts } = require('../utils/discountHelper');
 
 const getProducts = async (req, res, next) => {
     try {
@@ -101,7 +104,9 @@ const getProducts = async (req, res, next) => {
             .skip(pageSize * (page - 1))
             .sort(sortOption);
 
-        res.json({ products, page, pages: Math.ceil(count / pageSize), total: count });
+        const processedProducts = await applySectionDiscounts(products, isAdmin);
+
+        res.json({ products: processedProducts, page, pages: Math.ceil(count / pageSize), total: count });
     } catch (error) {
         next(error);
     }
@@ -114,7 +119,9 @@ const getProductById = async (req, res, next) => {
             .populate('brand');
 
         if (product) {
-            res.json(product);
+            const isAdmin = req.user && req.user.role === 'ADMIN';
+            const processedProduct = await applySectionDiscounts(product, isAdmin);
+            res.json(processedProduct);
         } else {
             res.status(404);
             throw new Error('Không tìm thấy sản phẩm');
@@ -131,12 +138,15 @@ const getProductBySlug = async (req, res, next) => {
             .populate('brand');
 
         if (product) {
+            const isAdmin = req.user && req.user.role === 'ADMIN';
             // Nếu sản phẩm bị ẩn, chỉ Admin mới được xem chi tiết
-            if (!product.active && (!req.user || req.user.role !== 'ADMIN')) {
+            if (!product.active && !isAdmin) {
                 res.status(404);
                 throw new Error('Sản phẩm hiện không khả dụng');
             }
-            res.json(product);
+            
+            const processedProduct = await applySectionDiscounts(product, isAdmin);
+            res.json(processedProduct);
         } else {
             res.status(404);
             throw new Error('Không tìm thấy sản phẩm');

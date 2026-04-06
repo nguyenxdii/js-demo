@@ -36,13 +36,20 @@ const createOrder = async (req, res, next) => {
         const address = shippingAddress || user.address;
 
         // 3. Chuẩn bị danh sách sản phẩm cho đơn hàng
-        const orderItems = cart.items.map(item => ({
-            product: item.product._id,
-            productName: item.product.name,
-            quantity: item.quantity,
-            price: item.product.price,
-            productImage: item.product.mainImageUrl
-        }));
+        // Áp dụng giảm giá động cho sản phẩm trong giỏ hàng
+        const { applySectionDiscounts } = require('../utils/discountHelper');
+        const productsWithDiscounts = await applySectionDiscounts(cart.items.map(i => i.product));
+        
+        const orderItems = cart.items.map((item, index) => {
+            const productWithDiscount = productsWithDiscounts[index];
+            return {
+                product: item.product._id,
+                productName: item.product.name,
+                quantity: item.quantity,
+                price: productWithDiscount.price,
+                productImage: item.product.mainImageUrl
+            };
+        });
 
         // 4. Tính toán tổng tiền
         const subtotal = orderItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
@@ -148,17 +155,6 @@ const createOrder = async (req, res, next) => {
                 throw new Error('Lỗi khởi tạo thanh toán MoMo');
             }
         } else {
-            // COD: Xóa giỏ hàng luôn và trừ kho
-            await reduceStock(orderItems);
-            
-            // Trừ số lượng voucher nếu có
-            if (order.voucherCode) {
-                await Voucher.findOneAndUpdate(
-                    { code: order.voucherCode },
-                    { $inc: { quantity: -1 } }
-                );
-            }
-
             await Cart.findOneAndUpdate({ user: userId }, { items: [] });
             res.status(201).json({ order: createdOrder, orderCode: orderCode });
         }

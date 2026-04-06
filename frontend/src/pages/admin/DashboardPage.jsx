@@ -57,6 +57,7 @@ export default function DashboardPage() {
     totalProducts: 0,
     monthlyRevenue: [],
     topProducts: [],
+    allSoldProducts: [],
     notifications: [],
     totalNotifications: 0,
   });
@@ -97,9 +98,9 @@ export default function DashboardPage() {
       csvContent += `${row.name},${row.revenue}\n`;
     });
 
-    csvContent += "\nTop sản phẩm bán chạy nhất\n";
+    csvContent += "\nDanh sách tất cả sản phẩm bán chạy\n";
     csvContent += "Tên sản phẩm,Số lượng bán\n";
-    stats.topProducts.forEach((row) => {
+    stats.allSoldProducts.forEach((row) => {
       csvContent += `${row.name.replace(/,/g, "")},${row.sales}\n`;
     });
 

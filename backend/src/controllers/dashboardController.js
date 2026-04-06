@@ -116,9 +116,9 @@ const getDashboardStats = async (req, res, next) => {
             }
         }
 
-        // 3. Top 5 sản phẩm bán chạy (CÓ áp dụng lọc thời gian)
-        const topProductsStats = await Order.aggregate([
-            { $match: { createdAt: { $gte: startDate } } },
+        // 3. Toàn bộ sản phẩm bán ra (CÓ áp dụng lọc thời gian và trạng thái)
+        const soldProductsStats = await Order.aggregate([
+            { $match: filteredMatch },
             { $unwind: "$items" },
             {
                 $group: {
@@ -127,13 +127,16 @@ const getDashboardStats = async (req, res, next) => {
                     sales: { $sum: "$items.quantity" }
                 }
             },
-            { $sort: { sales: -1 } },
-            { $limit: 5 }
+            { $sort: { sales: -1 } }
         ]);
-        const topProducts = topProductsStats.map(p => ({
+
+        const allSoldProducts = soldProductsStats.map(p => ({
             name: p.name || 'Sản phẩm ẩn danh',
             sales: p.sales
         }));
+
+        // Top 5 cho biểu đồ
+        const topProducts = allSoldProducts.slice(0, 5);
 
         // 4. Lấy thông báo hệ thống (Phân trang)
         const totalNotifications = await Notification.countDocuments();
@@ -156,6 +159,7 @@ const getDashboardStats = async (req, res, next) => {
             totalProducts,
             monthlyRevenue: revenueChart,
             topProducts,
+            allSoldProducts,
             notifications,
             totalNotifications
         });

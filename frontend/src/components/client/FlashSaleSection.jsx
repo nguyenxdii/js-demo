@@ -23,7 +23,7 @@ const FlashSaleSection = ({ section, sliderSettings }) => {
             {/* Background Layer 2: Orange Gradient */}
             <div className="relative bg-gradient-to-r from-red-600 to-orange-500 text-white py-2.5 px-8 pr-12 clip-path-slanted flex items-center shadow-lg">
               <Title level={4} className="!m-0 !text-lg !font-bold !text-white uppercase tracking-tight">
-                FLASH SALE
+                {section.title || "FLASH SALE"}
               </Title>
               {/* Subtle shine effect */}
               <div className="absolute top-0 right-0 h-full w-4 bg-white/10 skew-x-[-20deg] -mr-2"></div>
@@ -32,7 +32,7 @@ const FlashSaleSection = ({ section, sliderSettings }) => {
           
           <div className="ml-8 flex items-center gap-4 bg-orange-50/50 px-4 py-1.5 rounded-full border border-orange-100">
              <Text className="text-[10px] font-semibold uppercase text-orange-600 tracking-widest hidden sm:block">Kết thúc sau:</Text>
-             <CountdownTimer targetDate={new Date(Date.now() + 86400000).toISOString()} />
+             <CountdownTimer targetDate={section.endDate || new Date(Date.now() + 86400000).toISOString()} />
           </div>
         </div>
         
@@ -54,6 +54,6 @@ const FlashSaleSection = ({ section, sliderSettings }) => {
         </div>
       </div>
     );
-  };
+};
 
 export default FlashSaleSection;

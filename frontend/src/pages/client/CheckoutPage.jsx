@@ -101,6 +101,10 @@ const CheckoutPage = () => {
 
   const onFinish = async (values) => {
     if (!user) return;
+    if (loading) return; // Bảo vệ thêm một lớp nữa
+    
+    // Tạo message loading không tự động đóng
+    const closeLoadingMsg = message.loading("Đang xử lý đơn hàng, vui lòng không tắt trình duyệt...", 0);
     
     try {
       setLoading(true);
@@ -109,25 +113,27 @@ const CheckoutPage = () => {
         shippingAddress: values.shippingAddress,
         receiverPhone: values.receiverPhone,
         paymentMethod: values.paymentMethod,
-        voucherCode: values.voucherCode // Gửi mã voucher
+        voucherCode: values.voucherCode
       };
 
       const response = await orderService.createOrder(orderData);
       const { paymentUrl, orderCode } = response.data;
 
+      closeLoadingMsg(); // Đóng message loading cũ
       message.success("Đặt hàng thành công!");
 
       if (paymentUrl) {
-        // Redirection to MoMo: Không xóa giỏ hàng ngay để phòng trường hợp thanh toán thất bại
         window.location.href = paymentUrl;
       } else {
         // COD order: Xóa giỏ hàng và chuyển hướng
         if (typeof refreshCart === 'function') refreshCart();
-        navigate(`/payment/success?orderCode=${orderCode}`);
+        navigate(`/payment/success?orderId=${orderCode}&isCod=true`);
       }
     } catch (error) {
+      closeLoadingMsg(); // Đóng message loading nếu lỗi
       console.error("Order error:", error);
-      message.error(error.response?.data?.message || "Đã có lỗi xảy ra khi đặt hàng!");
+      const errorMsg = error.response?.data?.message || "Đã có lỗi xảy ra khi đặt hàng. Vui lòng thử lại!";
+      message.error(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -202,7 +208,7 @@ const CheckoutPage = () => {
                            <img src="https://static.mservice.io/img/logo-momo.png" className="h-8 rounded-lg" alt="momo" />
                           <div className="text-left">
                             <div className="font-bold text-gray-900">Thanh toán qua ví MoMo</div>
-                            <div className="text-xs text-secondary italic">Hệ thống hiện chỉ hỗ trợ thanh toán qua MoMo để đảm bảo an toàn giao dịch</div>
+                            <div className="text-xs text-secondary italic">Hệ thống hỗ trợ thanh toán qua MoMo để đảm bảo an toàn giao dịch</div>
                           </div>
                        </div>
                     </Radio.Button>
@@ -288,17 +294,18 @@ const CheckoutPage = () => {
                       </div>
                    </div>
 
-                   <Button 
+                    <Button 
                     type="primary" 
                     danger 
                     size="large" 
                     icon={<ThunderboltOutlined />}
                     block 
                     loading={loading}
+                    disabled={loading}
                     htmlType="submit"
-                    className="h-16 mt-8 rounded-2xl font-bold text-lg shadow-xl shadow-red-100 border-none bg-gradient-to-r from-red-600 to-orange-500 hover:scale-[1.02] transition-transform"
+                    className={`h-16 mt-8 rounded-2xl font-bold text-lg shadow-xl border-none transition-all ${loading ? 'opacity-70 grayscale cursor-not-allowed' : 'shadow-red-100 bg-gradient-to-r from-red-600 to-orange-500 hover:scale-[1.02]'}`}
                   >
-                    XÁC NHẬN ĐẶT HÀNG
+                    {loading ? "ĐANG XỬ LÝ..." : "XÁC NHẬN ĐẶT HÀNG"}
                   </Button>
                   
                   <Link to="/cart" className="flex items-center justify-center gap-2 mt-4 text-gray-400 hover:text-primary transition-colors font-bold uppercase text-xs">
