@@ -37,8 +37,8 @@ app.use('/api/vouchers', require('./routes/voucherRoutes'));
 app.use('/api/warranties', require('./routes/warrantyRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/sections', require('./routes/sectionRoutes'));
-app.use('/api/kit-builder', require('./routes/kitBuilderRoutes'));
 app.use('/api/comments', require('./routes/commentRoutes'));
+
 app.use('/api/admin/dashboard', require('./routes/dashboardRoutes'));
 
 // Error handling middleware

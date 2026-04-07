@@ -112,6 +112,16 @@ export default function LoginPage() {
             />
           </Form.Item>
 
+          <div className="flex justify-end -mt-4 mb-6">
+            <Link 
+              to="/forgot-password" 
+              className="text-xs font-bold text-orange-500 hover:text-orange-600 transition-colors uppercase tracking-widest"
+            >
+              Quên mật khẩu?
+            </Link>
+          </div>
+
+
           <Form.Item className="mt-2">
             <Button
               type="primary"

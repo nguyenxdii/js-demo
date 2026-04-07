@@ -26,7 +26,10 @@ import OrdersPage from "./pages/client/OrdersPage";
 import ProfilePage from "./pages/client/ProfilePage";
 import ContactPage from "./pages/client/ContactPage";
 import VerifyOtp from "./pages/auth/VerifyOtp";
+import ForgotPassword from "./pages/auth/ForgotPassword";
+import ResetPassword from "./pages/auth/ResetPassword";
 import { CartProvider } from "./contexts/CartContext";
+
 
 function App() {
   return (
@@ -43,6 +46,9 @@ function App() {
             {/* Auth Routes */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+
 
             {/* Admin Routes */}
             <Route path="/admin" element={<AdminLayout />}>

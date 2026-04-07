@@ -40,12 +40,15 @@ export default api;
 export const authAPI = {
   login: (email, password) => api.post("/auth/login", { email, password }),
   register: (userData) => api.post("/auth/register", userData),
+  forgotPassword: (email) => api.post("/auth/forgot-password", { email }),
+  resetPassword: (email, otp, newPassword) => api.post("/auth/reset-password", { email, otp, newPassword }),
   logout: () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/login";
   },
 };
+
 
 // Product API endpoints
 export const productAPI = {

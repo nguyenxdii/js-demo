@@ -106,8 +106,57 @@ const verifyOtp = async (email, otp) => {
     };
 };
 
+const forgotPassword = async (email) => {
+    const user = await User.findOne({ email });
+    if (!user) {
+        throw new Error('Email không tồn tại trong hệ thống.');
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+    user.verificationCode = otp;
+    user.verificationCodeExpiresAt = otpExpires;
+    await user.save();
+
+    await sendOtpEmail(email, otp, 'FORGOT_PASSWORD');
+
+    return {
+        email: user.email,
+        message: 'Mã OTP đặt lại mật khẩu đã được gửi đến email của bạn.',
+    };
+};
+
+const resetPassword = async (email, otp, newPassword) => {
+    const user = await User.findOne({ 
+        email,
+        verificationCode: otp,
+        verificationCodeExpiresAt: { $gt: Date.now() }
+    });
+
+    if (!user) {
+        throw new Error('Mã xác thực không chính xác hoặc đã hết hạn.');
+    }
+
+    user.password = newPassword;
+    user.verificationCode = undefined;
+    user.verificationCodeExpiresAt = undefined;
+    
+    // Đảm bảo account active nếu họ quên pass khi chưa active (hoặc cứ set true cho chắc)
+    user.active = true;
+    
+    await user.save();
+
+    return {
+        message: 'Mật khẩu đã được đặt lại thành công. Vui lòng đăng nhập lại.',
+    };
+};
+
 module.exports = {
     registerUser,
     authUser,
     verifyOtp,
+    forgotPassword,
+    resetPassword,
 };
+
